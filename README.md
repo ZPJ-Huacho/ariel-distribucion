@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mercadigital — Demo
 
-## Getting Started
+Demo navegable de la plataforma SaaS para digitalizar mayoristas locales (vertical: frutería de Mercabarna). Construida con Next.js 16 (App Router) + Tailwind CSS 4 + Zustand. Sin backend — datos hardcodeados en `src/lib/data` para enseñar el flujo end-to-end al primer cliente.
 
-First, run the development server:
+## Cuentas demo
+
+Pega estas credenciales en `/login` para probar cada rol.
+
+| Rol | Email | Contraseña | Qué ve |
+|---|---|---|---|
+| **Admin (dueño del negocio)** | `admin@frutas.com` | `admin123` | Catálogo + panel admin (`/admin/*`): dashboard, pedidos, productos. |
+| **Cliente final** | el que registres en `/registro` | el que tú pongas | Solo el catálogo público y su perfil pre-rellenado. |
+
+> Las cuentas de cliente final se guardan en `localStorage` del navegador. No hay backend — si limpias el storage o usas otro dispositivo, los registros se pierden.
+
+## Arrancar en local
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Rutas relevantes:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `/` — catálogo público (sin login).
+- `/?ref=tiktok-naranjas` — captura el origen del pedido.
+- `/pedido` — carrito + formulario de pedido.
+- `/login` y `/registro` — autenticación.
+- `/admin` — dashboard (requiere admin).
+- `/admin/pedidos` — gestión de pedidos + botón "Confirmar por WhatsApp".
+- `/admin/productos` — edición de precios y disponibilidad.
 
-## Learn More
+## Estado actual
 
-To learn more about Next.js, take a look at the following resources:
+Lo que SÍ hace la demo:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Catálogo mobile-first con 20 productos de frutería, filtros por categoría.
+- Carrito persistente, flujo de pedido sin abrir WhatsApp.
+- Pedido nuevo aparece en el panel admin con badge "Nuevo".
+- Tracking de fuente vía `?ref=` (se ve en el dashboard).
+- Auto-relleno del formulario para clientes recurrentes.
+- Botón "Repetir mi último pedido" en home si hay historial.
+- Login + registro + guard de `/admin`.
+- Botón "Confirmar por WhatsApp" en cada pedido (`wa.me` con mensaje listo).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Lo que NO hace (queda para el producto real con Supabase):
 
-## Deploy on Vercel
+- Backend real, multi-tenant ni Row Level Security.
+- WhatsApp Business API (mensajes automáticos sin clic).
+- Persistencia de pedidos entre dispositivos.
+- Notificaciones push.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Build de producción
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm build
+pnpm start
+```
+
+## Deploy
+
+Pensado para Vercel. Tras `vercel login`:
+
+```bash
+pnpm dlx vercel --prod
+```
