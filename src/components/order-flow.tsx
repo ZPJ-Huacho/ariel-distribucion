@@ -9,6 +9,7 @@ import { CartLine } from "@/components/cart-line";
 import { formatPrice } from "@/lib/format";
 import { tenant } from "@/lib/data/tenant";
 import { getCurrentSource } from "@/lib/source-tracking";
+import { buildOrderMessage, buildWhatsAppLink } from "@/lib/whatsapp";
 import type { DemoOrder } from "@/lib/data/types";
 
 const orderSchema = z.object({
@@ -127,6 +128,27 @@ export function OrderFlow() {
   }
 
   if (confirmation) {
+    const waMessage = buildOrderMessage(
+      confirmation.items.map((i) => ({
+        productId: i.name,
+        name: i.name,
+        price: i.price,
+        unit: i.unit,
+        emoji: "",
+        gradient: "",
+        quantity: i.quantity,
+      })),
+      {
+        customerName: confirmation.customerName,
+        customerPhone: confirmation.customerPhone,
+        customerAddress: confirmation.customerAddress,
+        preferredTime: confirmation.preferredTime,
+        notes: confirmation.notes,
+        source: confirmation.source,
+      },
+      tenant,
+    );
+    const waLink = buildWhatsAppLink(waMessage, tenant.whatsappNumber);
     return (
       <div className="rounded-3xl border border-emerald-200 bg-gradient-to-b from-emerald-50 to-white p-6 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
@@ -148,12 +170,28 @@ export function OrderFlow() {
             Pago en efectivo a la entrega · {tenant.deliveryHours.toLowerCase()}
           </p>
         </div>
-        <Link
-          href="/"
-          className="mt-6 inline-block rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white hover:bg-brand-700"
+        <a
+          href={waLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-6 py-3 text-sm font-bold text-white shadow-md hover:bg-emerald-600 active:scale-[0.99]"
         >
-          Volver al catálogo
-        </Link>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M19.05 4.91A9.92 9.92 0 0 0 12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.93 9.93 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.91-7.02zm-2.49 11.24c-.21.58-1.21 1.11-1.67 1.18-.42.06-.95.08-1.53-.1-.35-.11-.8-.26-1.38-.51-2.42-1.05-4.01-3.5-4.13-3.66-.12-.16-.99-1.32-.99-2.52s.63-1.78.85-2.03c.22-.25.49-.31.65-.31h.48c.15.01.36-.06.56.43.2.5.7 1.72.76 1.84.06.12.1.27.02.43-.09.16-.13.27-.25.41-.13.14-.27.32-.38.43-.13.13-.25.27-.11.51.15.25.64 1.06 1.38 1.72.95.84 1.75 1.1 2 1.23.25.12.4.1.54-.06.15-.16.63-.72.79-.97.17-.25.32-.21.56-.12.22.09 1.44.69 1.69.81.25.12.41.18.47.28.06.11.06.6-.15 1.18z" />
+          </svg>
+          Enviar también por WhatsApp
+        </a>
+        <p className="mt-2 text-[11px] text-stone-500">
+          Manda una copia del pedido al WhatsApp de {tenant.name} para hablar directamente con ellos.
+        </p>
+        <div className="mt-5">
+          <Link
+            href="/"
+            className="text-sm font-medium text-stone-600 hover:text-stone-900"
+          >
+            ← Volver al catálogo
+          </Link>
+        </div>
       </div>
     );
   }
