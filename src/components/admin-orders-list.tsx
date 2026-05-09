@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { DemoOrder } from "@/lib/data/types";
 import { formatPrice, formatRelativeTime, getSourceMeta } from "@/lib/format";
+import { useOrders } from "@/lib/orders-store";
 
 const statusOptions: { value: DemoOrder["status"]; label: string; tone: string }[] = [
   { value: "pending", label: "Pendiente", tone: "bg-amber-100 text-amber-700" },
@@ -16,12 +17,20 @@ const statusMeta = Object.fromEntries(statusOptions.map((s) => [s.value, s])) as
   (typeof statusOptions)[number]
 >;
 
-export function AdminOrdersList({ orders: seed }: { orders: DemoOrder[] }) {
-  const [orders, setOrders] = useState(seed);
+export function AdminOrdersList({ orders: demoOrders }: { orders: DemoOrder[] }) {
+  const userOrders = useOrders((s) => s.orders);
+  const setStoreStatus = useOrders((s) => s.setStatus);
+  const [demoState, setDemoState] = useState(demoOrders);
   const [openId, setOpenId] = useState<string | null>(null);
 
+  const orders = [...userOrders, ...demoState];
+
   function setStatus(id: string, status: DemoOrder["status"]) {
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+    if (userOrders.some((o) => o.id === id)) {
+      setStoreStatus(id, status);
+    } else {
+      setDemoState((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+    }
   }
 
   return (
@@ -42,7 +51,14 @@ export function AdminOrdersList({ orders: seed }: { orders: DemoOrder[] }) {
               </span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-sm font-semibold text-stone-900">{o.customerName}</span>
+                  <span className="flex items-center gap-1.5 truncate text-sm font-semibold text-stone-900">
+                    {o.customerName}
+                    {o.isNew && (
+                      <span className="shrink-0 animate-pulse rounded-full bg-rose-500 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                        Nuevo
+                      </span>
+                    )}
+                  </span>
                   <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${stMeta.tone}`}>
                     {stMeta.label}
                   </span>

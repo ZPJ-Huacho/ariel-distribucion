@@ -3,6 +3,7 @@ import { CategoryTabs } from "@/components/category-tabs";
 import { ProductCard } from "@/components/product-card";
 import { CartButton } from "@/components/cart-button";
 import { SourceCapture } from "@/components/source-capture";
+import { RepeatLastOrder } from "@/components/repeat-last-order";
 import { getProductsByCategory } from "@/lib/data/products";
 import { tenant } from "@/lib/data/tenant";
 import type { Category } from "@/lib/data/types";
@@ -39,6 +40,10 @@ export default async function Home({
             Pide en 30 segundos. Te lo confirmamos por WhatsApp y lo entregamos en el día.
           </p>
         </section>
+
+        <div className="mt-3 mb-1">
+          <RepeatLastOrder />
+        </div>
 
         <CategoryTabs active={active} />
 

@@ -42,10 +42,19 @@ export type DemoOrder = {
   id: string;
   customerName: string;
   customerPhone: string;
+  customerAddress?: string;
+  preferredTime?: string;
   items: { name: string; quantity: number; unit: string; price: number }[];
   total: number;
   status: "pending" | "confirmed" | "preparing" | "delivered";
   source: OrderSource;
   createdAt: string;
   notes?: string;
+  isNew?: boolean;
+};
+
+export type CustomerProfile = {
+  customerName: string;
+  customerPhone: string;
+  customerAddress?: string;
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCart } from "@/lib/cart-store";
+import { useToast } from "@/lib/toast-store";
 import type { Product } from "@/lib/data/types";
 import { formatPrice } from "@/lib/format";
 import { useState } from "react";
@@ -8,12 +9,14 @@ import { useState } from "react";
 export function ProductCard({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
   const items = useCart((s) => s.items);
+  const showToast = useToast((s) => s.show);
   const inCart = items.find((i) => i.productId === product.id);
   const [pulse, setPulse] = useState(false);
 
   function handleAdd() {
     if (!product.isAvailable) return;
     add(product);
+    showToast(`Añadido: ${product.name}`);
     setPulse(true);
     setTimeout(() => setPulse(false), 350);
   }

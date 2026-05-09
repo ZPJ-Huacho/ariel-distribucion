@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { tenant } from "@/lib/data/tenant";
+import { Toast } from "@/components/toast";
+import { StorageSync } from "@/components/storage-sync";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,7 +34,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${geistSans.variable} h-full`}>
-      <body className="min-h-full flex flex-col bg-stone-50 text-stone-900">{children}</body>
+      <body className="min-h-full flex flex-col bg-stone-50 text-stone-900">
+        <StorageSync />
+        {children}
+        <Toast />
+      </body>
     </html>
   );
 }
