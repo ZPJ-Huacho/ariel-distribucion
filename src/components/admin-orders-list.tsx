@@ -4,6 +4,30 @@ import { useState } from "react";
 import type { DemoOrder } from "@/lib/data/types";
 import { formatPrice, formatRelativeTime, getSourceMeta } from "@/lib/format";
 import { useOrders } from "@/lib/orders-store";
+import { tenant } from "@/lib/data/tenant";
+
+function buildConfirmMessage(order: DemoOrder): string {
+  const itemsLine = order.items
+    .map((i) => `• ${i.quantity}× ${i.name} (${i.unit})`)
+    .join("\n");
+  const time = order.preferredTime ?? "lo antes posible";
+  return [
+    `Hola ${order.customerName.split(" ")[0]}! 👋`,
+    `Soy de ${tenant.name}. Te confirmo tu pedido ${order.id}:`,
+    "",
+    itemsLine,
+    "",
+    `Total: ${formatPrice(order.total)} (en efectivo a la entrega)`,
+    `Te llevo el pedido ${time.toLowerCase()}.`,
+    "",
+    "¡Gracias por confiar en nosotros! 🍊",
+  ].join("\n");
+}
+
+function whatsappLink(phone: string, message: string): string {
+  const clean = phone.replace(/[^0-9]/g, "");
+  return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
+}
 
 const statusOptions: { value: DemoOrder["status"]; label: string; tone: string }[] = [
   { value: "pending", label: "Pendiente", tone: "bg-amber-100 text-amber-700" },
@@ -83,8 +107,24 @@ export function AdminOrdersList({ orders: demoOrders }: { orders: DemoOrder[] })
                 </div>
                 <div className="mt-3 space-y-1 border-t border-stone-200 pt-3 text-[12px] text-stone-600">
                   <div>📞 {o.customerPhone}</div>
+                  {o.customerAddress && <div>📍 {o.customerAddress}</div>}
+                  {o.preferredTime && <div>🕒 {o.preferredTime}</div>}
                   {o.notes && <div>📝 {o.notes}</div>}
                 </div>
+                <a
+                  href={whatsappLink(o.customerPhone, buildConfirmMessage(o))}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => {
+                    if (o.status === "pending") setStatus(o.id, "confirmed");
+                  }}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 active:scale-[0.99]"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <path d="M19.05 4.91A9.92 9.92 0 0 0 12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.93 9.93 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.91-7.02zm-2.49 11.24c-.21.58-1.21 1.11-1.67 1.18-.42.06-.95.08-1.53-.1-.35-.11-.8-.26-1.38-.51-2.42-1.05-4.01-3.5-4.13-3.66-.12-.16-.99-1.32-.99-2.52s.63-1.78.85-2.03c.22-.25.49-.31.65-.31h.48c.15.01.36-.06.56.43.2.5.7 1.72.76 1.84.06.12.1.27.02.43-.09.16-.13.27-.25.41-.13.14-.27.32-.38.43-.13.13-.25.27-.11.51.15.25.64 1.06 1.38 1.72.95.84 1.75 1.1 2 1.23.25.12.4.1.54-.06.15-.16.63-.72.79-.97.17-.25.32-.21.56-.12.22.09 1.44.69 1.69.81.25.12.41.18.47.28.06.11.06.6-.15 1.18z" />
+                  </svg>
+                  Confirmar por WhatsApp
+                </a>
                 <div className="mt-3">
                   <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-stone-500">
                     Cambiar estado

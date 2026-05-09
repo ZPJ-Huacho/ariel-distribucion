@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { tenant } from "@/lib/data/tenant";
+import { useAuth } from "@/lib/auth-store";
+import { useToast } from "@/lib/toast-store";
 
 const tabs = [
   { href: "/admin", label: "Hoy", emoji: "🏠" },
@@ -12,6 +15,40 @@ const tabs = [
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const user = useAuth((s) => s.user);
+  const hydrated = useAuth((s) => s.hydrated);
+  const logout = useAuth((s) => s.logout);
+  const showToast = useToast((s) => s.show);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!user || user.role !== "admin") {
+      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [hydrated, user, router, pathname]);
+
+  function handleLogout() {
+    logout();
+    showToast("Sesión cerrada");
+    router.push("/");
+  }
+
+  if (!hydrated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-stone-100 text-sm text-stone-500">
+        Cargando…
+      </div>
+    );
+  }
+
+  if (!user || user.role !== "admin") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-stone-100 text-sm text-stone-500">
+        Redirigiendo…
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-stone-100 pb-24">
@@ -26,15 +63,26 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </span>
             <div className="flex flex-col leading-tight">
               <span className="text-sm font-semibold text-stone-900">{tenant.name}</span>
-              <span className="text-[10px] uppercase tracking-wide text-stone-500">Panel admin</span>
+              <span className="text-[10px] uppercase tracking-wide text-stone-500">
+                Panel admin · {user.name.split(" ")[0]}
+              </span>
             </div>
           </div>
-          <Link
-            href="/"
-            className="rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-50"
-          >
-            Ver tienda
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link
+              href="/"
+              className="rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-50"
+            >
+              Tienda
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-50"
+            >
+              Salir
+            </button>
+          </div>
         </div>
       </header>
 

@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { tenant } from "@/lib/data/tenant";
+import { useAuth } from "@/lib/auth-store";
 
-export function Header({ adminLink = false }: { adminLink?: boolean }) {
+export function Header({ adminLink: _adminLink = false }: { adminLink?: boolean }) {
+  const user = useAuth((s) => s.user);
+  const hydrated = useAuth((s) => s.hydrated);
   const waLink = `https://wa.me/${tenant.whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-    `Hola! quería pedir desde tu web.`,
+    "Hola! quería pedir desde tu web.",
   )}`;
 
   return (
@@ -22,13 +27,26 @@ export function Header({ adminLink = false }: { adminLink?: boolean }) {
           </div>
         </Link>
         <div className="flex items-center gap-2">
-          {adminLink && (
+          {hydrated && user?.role === "admin" && (
             <Link
               href="/admin"
+              className="hidden items-center gap-1 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-100 sm:flex"
+            >
+              🛠️ Panel admin
+            </Link>
+          )}
+          {hydrated && !user && (
+            <Link
+              href="/login"
               className="hidden rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-50 sm:block"
             >
-              Panel admin
+              Iniciar sesión
             </Link>
+          )}
+          {hydrated && user && user.role !== "admin" && (
+            <span className="hidden items-center gap-1 rounded-full bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-700 sm:flex">
+              👤 {user.name.split(" ")[0]}
+            </span>
           )}
           <a
             href={waLink}

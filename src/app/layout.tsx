@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import { tenant } from "@/lib/data/tenant";
 import { Toast } from "@/components/toast";
 import { StorageSync } from "@/components/storage-sync";
+import { AuthSync } from "@/components/auth-sync";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -35,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${geistSans.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-stone-50 text-stone-900">
+        <AuthSync />
         <StorageSync />
         {children}
         <Toast />
