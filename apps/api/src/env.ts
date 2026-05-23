@@ -1,4 +1,4 @@
-import type { Tenant } from "@mercabana/db";
+import type { Tenant, User } from "@mercabana/db";
 
 export type AppEnv = {
   Bindings: {
@@ -7,5 +7,7 @@ export type AppEnv = {
   };
   Variables: {
     tenant: Tenant;
+    user: User | null;
+    sessionToken: string | null;
   };
 };

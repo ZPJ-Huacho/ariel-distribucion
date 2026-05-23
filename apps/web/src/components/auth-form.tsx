@@ -3,25 +3,14 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { z } from "zod";
+import { ApiError, loginSchema, registerSchema } from "@mercabana/core";
 import { tenant } from "@/lib/data/tenant";
-import { tryLogin, tryRegister, useAuth } from "@/lib/auth-store";
+import { createBrowserApiClient } from "@/lib/api";
+import { useAuth } from "@/lib/auth-store";
 import { useOrders } from "@/lib/orders-store";
 import { useToast } from "@/lib/toast-store";
 
 type Mode = "login" | "register";
-
-const loginSchema = z.object({
-  email: z.string().email("Email no válido."),
-  password: z.string().min(4, "Mínimo 4 caracteres."),
-});
-
-const registerSchema = z.object({
-  name: z.string().min(2, "Pon tu nombre."),
-  email: z.string().email("Email no válido."),
-  password: z.string().min(4, "Mínimo 4 caracteres."),
-  phone: z.string().min(9, "Teléfono no válido.").regex(/^[0-9 +\-]+$/, "Solo números."),
-});
 
 export function AuthForm({ initialMode = "login" }: { initialMode?: Mode }) {
   const router = useRouter();
@@ -36,6 +25,7 @@ export function AuthForm({ initialMode = "login" }: { initialMode?: Mode }) {
   const [values, setValues] = useState({ name: "", email: "", password: "", phone: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   function update(key: keyof typeof values, value: string) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -43,55 +33,61 @@ export function AuthForm({ initialMode = "login" }: { initialMode?: Mode }) {
     setServerError(null);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
     setServerError(null);
+    setSubmitting(true);
 
-    if (mode === "login") {
-      const parsed = loginSchema.safeParse(values);
-      if (!parsed.success) {
-        const f: Record<string, string> = {};
-        for (const issue of parsed.error.issues) f[String(issue.path[0])] = issue.message;
-        setErrors(f);
-        return;
-      }
-      const res = tryLogin(parsed.data.email, parsed.data.password);
-      if (!res.ok) {
-        setServerError(res.error);
-        return;
-      }
-      login(res.user);
-      showToast(`Sesión iniciada · ${res.user.name.split(" ")[0]}`);
-      if (res.user.role === "admin") {
-        router.push("/admin");
+    const client = createBrowserApiClient();
+    try {
+      if (mode === "login") {
+        const parsed = loginSchema.safeParse(values);
+        if (!parsed.success) {
+          const f: Record<string, string> = {};
+          for (const issue of parsed.error.issues) f[String(issue.path[0])] = issue.message;
+          setErrors(f);
+          return;
+        }
+        const { user } = await client.auth.login(parsed.data);
+        login(user);
+        showToast(`Sesión iniciada · ${user.name.split(" ")[0]}`);
+        if (user.role === "admin") {
+          router.push("/admin");
+        } else {
+          setCustomer({
+            customerName: user.name,
+            customerPhone: user.phone ?? "",
+          });
+          router.push(redirect);
+        }
       } else {
+        const parsed = registerSchema.safeParse(values);
+        if (!parsed.success) {
+          const f: Record<string, string> = {};
+          for (const issue of parsed.error.issues) f[String(issue.path[0])] = issue.message;
+          setErrors(f);
+          return;
+        }
+        const { user } = await client.auth.register(parsed.data);
+        login(user);
         setCustomer({
-          customerName: res.user.name,
-          customerPhone: res.user.phone ?? "",
+          customerName: user.name,
+          customerPhone: user.phone ?? "",
         });
+        showToast(`Cuenta creada · ${user.name.split(" ")[0]}`);
         router.push(redirect);
       }
-    } else {
-      const parsed = registerSchema.safeParse(values);
-      if (!parsed.success) {
-        const f: Record<string, string> = {};
-        for (const issue of parsed.error.issues) f[String(issue.path[0])] = issue.message;
-        setErrors(f);
-        return;
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 401) setServerError("Email o contraseña incorrectos.");
+        else if (err.status === 409) setServerError("Ya existe una cuenta con ese email.");
+        else setServerError("No se pudo procesar la petición.");
+      } else {
+        setServerError("Sin conexión con el servidor. Intenta de nuevo.");
       }
-      const res = tryRegister(parsed.data);
-      if (!res.ok) {
-        setServerError(res.error);
-        return;
-      }
-      login(res.user);
-      setCustomer({
-        customerName: res.user.name,
-        customerPhone: res.user.phone ?? "",
-      });
-      showToast(`Cuenta creada · ${res.user.name.split(" ")[0]}`);
-      router.push(redirect);
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -195,9 +191,10 @@ export function AuthForm({ initialMode = "login" }: { initialMode?: Mode }) {
 
         <button
           type="submit"
-          className="mt-1 w-full rounded-md border border-brand-900 bg-brand-800 py-3 text-[12px] font-semibold uppercase tracking-[0.16em] text-accent-100 transition hover:bg-brand-900 active:scale-[0.997]"
+          disabled={submitting}
+          className="mt-1 w-full rounded-md border border-brand-900 bg-brand-800 py-3 text-[12px] font-semibold uppercase tracking-[0.16em] text-accent-100 transition hover:bg-brand-900 active:scale-[0.997] disabled:opacity-60"
         >
-          {mode === "login" ? "Entrar" : "Crear cuenta"}
+          {submitting ? "…" : mode === "login" ? "Entrar" : "Crear cuenta"}
         </button>
 
         <Link

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { tenant } from "@/lib/data/tenant";
+import { createBrowserApiClient } from "@/lib/api";
 import { useAuth } from "@/lib/auth-store";
 import { useToast } from "@/lib/toast-store";
 
@@ -73,7 +74,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     }
   }, [hydrated, user, router, pathname]);
 
-  function handleLogout() {
+  async function handleLogout() {
+    try {
+      await createBrowserApiClient().auth.logout();
+    } catch {}
     logout();
     showToast("Sesión cerrada");
     router.push("/");

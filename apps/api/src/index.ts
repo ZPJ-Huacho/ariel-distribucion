@@ -1,7 +1,11 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { AppEnv } from "./env";
+import { resolveSession, requireAdmin } from "./middleware/auth";
 import { resolveTenant } from "./middleware/tenant";
+import { adminRoutes } from "./routes/admin";
+import { authRoutes } from "./routes/auth";
+import { orderRoutes } from "./routes/orders";
 import { publicRoutes } from "./routes/public";
 
 const app = new Hono<AppEnv>();
@@ -22,7 +26,14 @@ app.use(
 app.get("/", (c) => c.text("mercabana-api"));
 
 app.use("/api/*", resolveTenant);
+app.use("/api/*", resolveSession);
+
 app.route("/api", publicRoutes);
+app.route("/api/auth", authRoutes);
+app.route("/api/orders", orderRoutes);
+
+app.use("/api/admin/*", requireAdmin);
+app.route("/api/admin", adminRoutes);
 
 app.onError((err, c) => {
   console.error(err);

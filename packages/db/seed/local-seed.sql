@@ -1,6 +1,7 @@
 -- Local seed: Mercabana / Frutas del Mercat (subdomain: frutas)
 -- Apply via: wrangler d1 execute mercabana --local --file=../../packages/db/seed/local-seed.sql
 
+DELETE FROM orders;
 DELETE FROM products;
 DELETE FROM categories;
 DELETE FROM users;
@@ -8,6 +9,10 @@ DELETE FROM tenants;
 
 INSERT INTO tenants (id, slug, name, tagline, whatsapp_number, address, delivery_hours, primary_color, primary_color_dark, emoji) VALUES
   ('ten_frutas', 'frutas', 'Frutas del Mercat', 'Mayorista de fruta y verdura · Mercabarna', '+34681873504', 'Mercabarna, Barcelona', 'Lunes a sábado · 8:00 — 14:00', '#2d5128', '#1f3b1c', '🍊');
+
+-- Demo admin: admin@frutas.com / admin123 (bcrypt cost 10)
+INSERT INTO users (id, tenant_id, email, password_hash, name, phone, role) VALUES
+  ('usr_admin_demo', 'ten_frutas', 'admin@frutas.com', '$2b$10$0s4OHXxted66ulzKb2PRze/5uFgvXtpeIRUgKaMwW01rCgmb3R8re', 'Admin Mercabana', '+34681873504', 'admin');
 
 INSERT INTO categories (id, tenant_id, slug, title, lead, icon, sort_order, active) VALUES
   ('cat_frutas',   'ten_frutas', 'frutas',   'Frutas de temporada', 'Recogidas en lonja a primera hora', '🍎', 1, 1),
