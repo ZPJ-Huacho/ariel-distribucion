@@ -3,7 +3,11 @@ packages:
   - "packages/*"
 
 allowBuilds:
+  esbuild: true
   sharp: true
 
 ignoredBuiltDependencies:
   - unrs-resolver
+
+minimumReleaseAgeExclude:
+  - '@cloudflare/workers-types@4.20260523.1'
