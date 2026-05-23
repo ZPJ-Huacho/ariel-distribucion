@@ -1,0 +1,22 @@
+{
+  "name": "@mercabana/api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "@mercabana/core": "workspace:*",
+    "@mercabana/db": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.22"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260523.1",
+    "typescript": "^5",
+    "wrangler": "^4.94.0"
+  }
+}
