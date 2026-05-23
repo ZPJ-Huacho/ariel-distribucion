@@ -1,6 +1,23 @@
 import { AdminProductsList } from "@/components/admin-products-list";
+import { createRequestApiClient } from "@/lib/api-server";
+import { products as fallbackProducts } from "@/lib/data/products";
+import { categories as fallbackCategories } from "@/lib/data/categories";
 
-export default function AdminProductos() {
+export const dynamic = "force-dynamic";
+
+export default async function AdminProductos() {
+  const client = await createRequestApiClient();
+  let products = fallbackProducts;
+  let categories = fallbackCategories;
+  try {
+    [products, categories] = await Promise.all([
+      client.products.list(),
+      client.categories.list(),
+    ]);
+  } catch (err) {
+    console.warn("[admin/productos] API not reachable, using local seed:", err);
+  }
+
   return (
     <div className="space-y-5">
       <div className="border-b border-[var(--color-line)] pb-4">
@@ -12,7 +29,7 @@ export default function AdminProductos() {
           Añade, edita o retira productos. El toggle marca disponibilidad para el día actual.
         </p>
       </div>
-      <AdminProductsList />
+      <AdminProductsList initialProducts={products} initialCategories={categories} />
     </div>
   );
 }

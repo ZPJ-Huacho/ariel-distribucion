@@ -26,6 +26,7 @@ export const publicRoutes = new Hono<AppEnv>()
     const tenant = c.get("tenant");
     const rows = await db
       .select({
+        id: categories.id,
         slug: categories.slug,
         title: categories.title,
         lead: categories.lead,

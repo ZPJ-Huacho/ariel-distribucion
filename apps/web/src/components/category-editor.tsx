@@ -1,10 +1,23 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
+import { ApiError } from "@mercabana/core";
 import type { CategoryDef } from "@mercabana/core";
-import { slugify, useCategories } from "@/lib/categories-store";
+import { createBrowserApiClient } from "@/lib/api";
 import { useToast } from "@/lib/toast-store";
+
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .slice(0, 32);
+}
 
 type Mode =
   | { type: "new" }
@@ -32,15 +45,16 @@ const defaultValues: FormValues = {
 
 export function CategoryEditor({
   mode,
+  categories,
   onClose,
 }: {
   mode: Mode;
+  categories: CategoryDef[];
   onClose: () => void;
 }) {
-  const categories = useCategories((s) => s.categories);
-  const addCategory = useCategories((s) => s.addCategory);
-  const updateCategory = useCategories((s) => s.updateCategory);
+  const router = useRouter();
   const showToast = useToast((s) => s.show);
+  const [saving, setSaving] = useState(false);
 
   const initial = useMemo<FormValues>(() => {
     if (!mode || mode.type === "new") return defaultValues;
@@ -86,7 +100,7 @@ export function CategoryEditor({
     if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = schema.safeParse(values);
     if (!parsed.success) {
@@ -107,24 +121,39 @@ export function CategoryEditor({
       return;
     }
     if (!mode) return;
-    if (mode.type === "new") {
-      addCategory({
-        slug: data.slug,
-        title: data.title,
-        lead: data.lead ?? "",
-        icon: data.icon,
-      });
-      showToast(`Categoría creada: ${data.title}`);
-    } else {
-      updateCategory(mode.category.slug, {
-        slug: data.slug,
-        title: data.title,
-        lead: data.lead ?? "",
-        icon: data.icon,
-      });
-      showToast(`Categoría actualizada: ${data.title}`);
+
+    setSaving(true);
+    const client = createBrowserApiClient();
+    const payload = {
+      slug: data.slug,
+      title: data.title,
+      lead: data.lead ?? "",
+      icon: data.icon,
+    };
+    try {
+      if (mode.type === "new") {
+        await client.admin.categories.create(payload);
+        showToast(`Categoría creada: ${data.title}`);
+      } else {
+        if (!mode.category.id) {
+          showToast("Falta el id de la categoría");
+          return;
+        }
+        await client.admin.categories.update(mode.category.id, payload);
+        showToast(`Categoría actualizada: ${data.title}`);
+      }
+      router.refresh();
+      onClose();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setErrors({ slug: "Ya existe una categoría con ese slug." });
+      } else {
+        const msg = err instanceof ApiError ? `Error ${err.status}` : "Sin conexión";
+        showToast(`No se pudo guardar (${msg})`);
+      }
+    } finally {
+      setSaving(false);
     }
-    onClose();
   }
 
   const title = mode.type === "new" ? "Nueva categoría" : "Editar categoría";
@@ -226,9 +255,10 @@ export function CategoryEditor({
           </button>
           <button
             type="submit"
-            className="flex-1 rounded-md border border-brand-900 bg-brand-800 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-100 hover:bg-brand-900"
+            disabled={saving}
+            className="flex-1 rounded-md border border-brand-900 bg-brand-800 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-100 hover:bg-brand-900 disabled:opacity-60"
           >
-            Guardar
+            {saving ? "…" : "Guardar"}
           </button>
         </footer>
       </form>

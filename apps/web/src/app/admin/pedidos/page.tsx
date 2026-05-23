@@ -1,7 +1,23 @@
+import { redirect } from "next/navigation";
+import { ApiError } from "@mercabana/core";
+import type { AdminOrder } from "@mercabana/core";
 import { AdminOrdersList } from "@/components/admin-orders-list";
-import { demoOrders } from "@/lib/data/demo-orders";
+import { createRequestApiClient } from "@/lib/api-server";
 
-export default function AdminPedidos() {
+export const dynamic = "force-dynamic";
+
+export default async function AdminPedidos() {
+  const client = await createRequestApiClient();
+  let orders: AdminOrder[] = [];
+  try {
+    orders = await client.admin.orders.list();
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) {
+      redirect("/login?redirect=/admin/pedidos");
+    }
+    console.warn("[admin/pedidos] failed to load:", err);
+  }
+
   return (
     <div className="space-y-5">
       <div className="border-b border-[var(--color-line)] pb-4">
@@ -13,7 +29,7 @@ export default function AdminPedidos() {
           Toca un pedido para ver el detalle, confirmar por WhatsApp o cambiar de estado.
         </p>
       </div>
-      <AdminOrdersList orders={demoOrders} />
+      <AdminOrdersList orders={orders} />
     </div>
   );
 }

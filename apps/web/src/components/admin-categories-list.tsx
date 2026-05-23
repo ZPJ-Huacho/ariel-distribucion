@@ -1,9 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { CategoryDef } from "@mercabana/core";
-import { useCategories } from "@/lib/categories-store";
-import { useProducts } from "@/lib/products-store";
+import type { CategoryDef, Product } from "@mercabana/core";
 import { CategoryEditor } from "@/components/category-editor";
 import { CategoryDeleteDialog } from "@/components/category-delete-dialog";
 
@@ -12,10 +10,15 @@ type EditorMode =
   | { type: "edit"; category: CategoryDef }
   | null;
 
-export function AdminCategoriesList() {
-  const categories = useCategories((s) => s.categories);
-  const hydrated = useCategories((s) => s.hydrated);
-  const products = useProducts((s) => s.products);
+export function AdminCategoriesList({
+  initialCategories,
+  initialProducts,
+}: {
+  initialCategories: CategoryDef[];
+  initialProducts: Product[];
+}) {
+  const categories = initialCategories;
+  const products = initialProducts;
 
   const [editor, setEditor] = useState<EditorMode>(null);
   const [deleteTarget, setDeleteTarget] = useState<CategoryDef | null>(null);
@@ -29,14 +32,6 @@ export function AdminCategoriesList() {
     for (const p of products) map[p.category] = (map[p.category] ?? 0) + 1;
     return map;
   }, [products]);
-
-  if (!hydrated) {
-    return (
-      <div className="rounded-md border border-dashed border-[var(--color-line)] p-8 text-center text-sm text-[var(--color-ink-mute)]">
-        Cargando categorías…
-      </div>
-    );
-  }
 
   return (
     <>
@@ -99,12 +94,8 @@ export function AdminCategoriesList() {
                 <button
                   type="button"
                   onClick={() => setDeleteTarget(cat)}
-                  disabled={sorted.length <= 1 && count > 0}
-                  title={
-                    sorted.length <= 1 && count > 0
-                      ? "Necesitas al menos una categoría para los productos existentes"
-                      : undefined
-                  }
+                  disabled={count > 0}
+                  title={count > 0 ? "Borra primero los productos de la categoría" : undefined}
                   className="rounded-md border border-[var(--color-line)] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Eliminar
@@ -120,9 +111,15 @@ export function AdminCategoriesList() {
         )}
       </ul>
 
-      <CategoryEditor mode={editor} onClose={() => setEditor(null)} />
+      <CategoryEditor
+        mode={editor}
+        categories={categories}
+        onClose={() => setEditor(null)}
+      />
       <CategoryDeleteDialog
         category={deleteTarget}
+        categories={categories}
+        products={products}
         onClose={() => setDeleteTarget(null)}
       />
     </>

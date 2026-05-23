@@ -5,7 +5,7 @@ import { CartButton } from "@/components/cart-button";
 import { SourceCapture } from "@/components/source-capture";
 import { RepeatLastOrder } from "@/components/repeat-last-order";
 import { SiteFooter } from "@/components/site-footer";
-import { createServerApiClient } from "@/lib/api";
+import { createServerApiClient } from "@/lib/api-server";
 import { products as fallbackProducts } from "@/lib/data/products";
 import { categories as fallbackCategories } from "@/lib/data/categories";
 import type { CategoryDef, Product } from "@mercabana/core";

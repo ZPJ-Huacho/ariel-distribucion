@@ -2,10 +2,11 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Product } from "@mercabana/core";
+import { useRouter } from "next/navigation";
+import { ApiError } from "@mercabana/core";
+import type { CategoryDef, Product } from "@mercabana/core";
 import { formatPrice, pricePerKg } from "@/lib/format";
-import { useProducts } from "@/lib/products-store";
-import { useCategories } from "@/lib/categories-store";
+import { createBrowserApiClient } from "@/lib/api";
 import { useToast } from "@/lib/toast-store";
 import { ProductEditor } from "@/components/product-editor";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -14,12 +15,16 @@ type EditorMode = { type: "new" } | { type: "edit"; product: Product } | null;
 type SortKey = "name" | "category" | "price" | "perKg" | "status";
 type SortDir = "asc" | "desc";
 
-export function AdminProductsList() {
-  const products = useProducts((s) => s.products);
-  const hydrated = useProducts((s) => s.hydrated);
-  const updateProduct = useProducts((s) => s.updateProduct);
-  const removeProduct = useProducts((s) => s.removeProduct);
-  const categories = useCategories((s) => s.categories);
+export function AdminProductsList({
+  initialProducts,
+  initialCategories,
+}: {
+  initialProducts: Product[];
+  initialCategories: CategoryDef[];
+}) {
+  const router = useRouter();
+  const products = initialProducts;
+  const categories = initialCategories;
   const showToast = useToast((s) => s.show);
 
   const [editor, setEditor] = useState<EditorMode>(null);
@@ -93,23 +98,30 @@ export function AdminProductsList() {
     setDeleteTarget(p);
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!deleteTarget) return;
-    const name = deleteTarget.name;
-    removeProduct(deleteTarget.id);
-    showToast(`Eliminado: ${name}`);
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    try {
+      await createBrowserApiClient().admin.products.remove(target.id);
+      showToast(`Eliminado: ${target.name}`);
+      router.refresh();
+    } catch (err) {
+      const msg = err instanceof ApiError ? `Error ${err.status}` : "Sin conexión";
+      showToast(`No se pudo eliminar (${msg})`);
+    }
   }
 
-  function toggleAvailable(p: Product) {
-    updateProduct(p.id, { isAvailable: !p.isAvailable });
-  }
-
-  if (!hydrated) {
-    return (
-      <div className="rounded-md border border-dashed border-[var(--color-line)] p-8 text-center text-sm text-[var(--color-ink-mute)]">
-        Cargando catálogo…
-      </div>
-    );
+  async function toggleAvailable(p: Product) {
+    try {
+      await createBrowserApiClient().admin.products.update(p.id, {
+        isAvailable: !p.isAvailable,
+      });
+      router.refresh();
+    } catch (err) {
+      const msg = err instanceof ApiError ? `Error ${err.status}` : "Sin conexión";
+      showToast(`No se pudo actualizar (${msg})`);
+    }
   }
 
   const totalAvailable = products.filter((p) => p.isAvailable).length;
@@ -329,7 +341,11 @@ export function AdminProductsList() {
         </>
       )}
 
-      <ProductEditor mode={editor} onClose={() => setEditor(null)} />
+      <ProductEditor
+        mode={editor}
+        categories={categories}
+        onClose={() => setEditor(null)}
+      />
       <ConfirmDialog
         open={!!deleteTarget}
         tone="danger"

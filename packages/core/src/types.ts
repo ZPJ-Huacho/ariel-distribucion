@@ -1,6 +1,7 @@
 export type Category = string;
 
 export type CategoryDef = {
+  id?: string;
   slug: string;
   title: string;
   lead: string;

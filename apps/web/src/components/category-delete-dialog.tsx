@@ -1,26 +1,28 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { CategoryDef } from "@mercabana/core";
-import { useCategories } from "@/lib/categories-store";
-import { useProducts } from "@/lib/products-store";
+import { useRouter } from "next/navigation";
+import { ApiError } from "@mercabana/core";
+import type { CategoryDef, Product } from "@mercabana/core";
+import { createBrowserApiClient } from "@/lib/api";
 import { useToast } from "@/lib/toast-store";
 
 type Action = "move" | "delete-products";
 
 export function CategoryDeleteDialog({
   category,
+  categories,
+  products,
   onClose,
 }: {
   category: CategoryDef | null;
+  categories: CategoryDef[];
+  products: Product[];
   onClose: () => void;
 }) {
-  const categories = useCategories((s) => s.categories);
-  const removeCategory = useCategories((s) => s.removeCategory);
-  const products = useProducts((s) => s.products);
-  const migrateCategory = useProducts((s) => s.migrateCategory);
-  const removeByCategory = useProducts((s) => s.removeByCategory);
+  const router = useRouter();
   const showToast = useToast((s) => s.show);
+  const [busy, setBusy] = useState(false);
 
   const productsInCat = useMemo(
     () => (category ? products.filter((p) => p.category === category.slug) : []),
@@ -58,23 +60,43 @@ export function CategoryDeleteDialog({
 
   if (!category) return null;
 
-  function handleConfirm() {
-    if (!category) return;
-    if (productsInCat.length > 0) {
-      if (action === "move") {
-        if (!targetSlug) return;
-        migrateCategory(category.slug, targetSlug);
-      } else {
-        removeByCategory(category.slug);
-      }
+  async function handleConfirm() {
+    if (!category?.id) {
+      showToast("Falta el id de la categoría");
+      return;
     }
-    removeCategory(category.slug);
-    showToast(`Categoría eliminada: ${category.title}`);
-    onClose();
+    setBusy(true);
+    const client = createBrowserApiClient();
+    try {
+      if (productsInCat.length > 0) {
+        if (action === "move") {
+          if (!targetSlug) return;
+          await Promise.all(
+            productsInCat.map((p) =>
+              client.admin.products.update(p.id, { category: targetSlug }),
+            ),
+          );
+        } else {
+          await Promise.all(
+            productsInCat.map((p) => client.admin.products.remove(p.id)),
+          );
+        }
+      }
+      await client.admin.categories.remove(category.id);
+      showToast(`Categoría eliminada: ${category.title}`);
+      router.refresh();
+      onClose();
+    } catch (err) {
+      const msg = err instanceof ApiError ? `Error ${err.status}` : "Sin conexión";
+      showToast(`No se pudo eliminar (${msg})`);
+    } finally {
+      setBusy(false);
+    }
   }
 
   const hasProducts = productsInCat.length > 0;
-  const canConfirm = !hasProducts || action === "delete-products" || !!targetSlug;
+  const canConfirm =
+    !busy && (!hasProducts || action === "delete-products" || !!targetSlug);
   const hasAlternatives = otherCategories.length > 0;
 
   return (
@@ -96,9 +118,7 @@ export function CategoryDeleteDialog({
 
         <div className="space-y-4 px-5 py-4 text-sm text-[var(--color-ink-soft)]">
           {!hasProducts && (
-            <p>
-              La categoría no contiene productos. Se eliminará del catálogo.
-            </p>
+            <p>La categoría no contiene productos. Se eliminará del catálogo.</p>
           )}
 
           {hasProducts && (
@@ -153,7 +173,8 @@ export function CategoryDeleteDialog({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-md border border-[var(--color-line)] py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-soft)] hover:bg-[var(--color-canvas-soft)]"
+            disabled={busy}
+            className="flex-1 rounded-md border border-[var(--color-line)] py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-soft)] hover:bg-[var(--color-canvas-soft)] disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -163,7 +184,7 @@ export function CategoryDeleteDialog({
             disabled={!canConfirm}
             className="flex-1 rounded-md border border-rose-800 bg-rose-700 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-rose-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Eliminar
+            {busy ? "…" : "Eliminar"}
           </button>
         </footer>
       </div>

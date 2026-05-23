@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useCategories } from "@/lib/categories-store";
 import type { CategoryDef } from "@mercabana/core";
 
 export function CategoryTabs({
@@ -9,12 +8,9 @@ export function CategoryTabs({
   seedCategories,
 }: {
   active: string;
-  seedCategories?: CategoryDef[];
+  seedCategories: CategoryDef[];
 }) {
-  const storeCats = useCategories((s) => s.categories);
-  const hydrated = useCategories((s) => s.hydrated);
-  const cats = hydrated || !seedCategories ? storeCats : seedCategories;
-  const sorted = [...cats].sort((a, b) => a.sortOrder - b.sortOrder);
+  const sorted = [...seedCategories].sort((a, b) => a.sortOrder - b.sortOrder);
 
   const tabs = [
     { id: "todas", label: "Todo" },

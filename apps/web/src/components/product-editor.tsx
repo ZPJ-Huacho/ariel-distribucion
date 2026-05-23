@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
-import type { Product } from "@mercabana/core";
-import { useProducts } from "@/lib/products-store";
-import { useCategories } from "@/lib/categories-store";
+import { ApiError } from "@mercabana/core";
+import type { CategoryDef, Product } from "@mercabana/core";
+import { createBrowserApiClient } from "@/lib/api";
 import { useToast } from "@/lib/toast-store";
 
 const schema = z.object({
@@ -68,15 +69,16 @@ type Mode = { type: "new" } | { type: "edit"; product: Product };
 
 export function ProductEditor({
   mode,
+  categories,
   onClose,
 }: {
   mode: Mode | null;
+  categories: CategoryDef[];
   onClose: () => void;
 }) {
-  const addProduct = useProducts((s) => s.addProduct);
-  const updateProduct = useProducts((s) => s.updateProduct);
-  const categories = useCategories((s) => s.categories);
+  const router = useRouter();
   const showToast = useToast((s) => s.show);
+  const [saving, setSaving] = useState(false);
 
   const sortedCategories = useMemo(
     () => [...categories].sort((a, b) => a.sortOrder - b.sortOrder),
@@ -149,7 +151,7 @@ export function ProductEditor({
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = schema.safeParse(values);
     if (!parsed.success) {
@@ -163,35 +165,36 @@ export function ProductEditor({
     }
     const data = parsed.data;
     if (!mode) return;
-    if (mode.type === "new") {
-      addProduct({
-        name: data.name,
-        description: data.description ?? "",
-        price: data.price,
-        unit: data.unit,
-        category: data.category,
-        emoji: data.emoji,
-        gradient: "from-stone-200 to-stone-400",
-        isAvailable: data.isAvailable,
-        isHighlighted: data.isHighlighted,
-        imageUrl: data.imageUrl,
-      });
-      showToast(`Añadido: ${data.name}`);
-    } else {
-      updateProduct(mode.product.id, {
-        name: data.name,
-        description: data.description ?? "",
-        price: data.price,
-        unit: data.unit,
-        category: data.category,
-        emoji: data.emoji,
-        isAvailable: data.isAvailable,
-        isHighlighted: data.isHighlighted,
-        imageUrl: data.imageUrl,
-      });
-      showToast(`Actualizado: ${data.name}`);
+
+    setSaving(true);
+    const client = createBrowserApiClient();
+    const payload = {
+      name: data.name,
+      description: data.description ?? "",
+      price: data.price,
+      unit: data.unit,
+      category: data.category,
+      emoji: data.emoji,
+      gradient: "from-stone-200 to-stone-400",
+      isAvailable: data.isAvailable,
+      isHighlighted: data.isHighlighted,
+    };
+    try {
+      if (mode.type === "new") {
+        await client.admin.products.create(payload);
+        showToast(`Añadido: ${data.name}`);
+      } else {
+        await client.admin.products.update(mode.product.id, payload);
+        showToast(`Actualizado: ${data.name}`);
+      }
+      router.refresh();
+      onClose();
+    } catch (err) {
+      const msg = err instanceof ApiError ? `Error ${err.status}` : "Sin conexión";
+      showToast(`No se pudo guardar (${msg})`);
+    } finally {
+      setSaving(false);
     }
-    onClose();
   }
 
   const title = mode.type === "new" ? "Nuevo producto" : "Editar producto";
@@ -336,9 +339,10 @@ export function ProductEditor({
           </button>
           <button
             type="submit"
-            className="flex-1 rounded-md border border-brand-900 bg-brand-800 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-100 hover:bg-brand-900"
+            disabled={saving}
+            className="flex-1 rounded-md border border-brand-900 bg-brand-800 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-100 hover:bg-brand-900 disabled:opacity-60"
           >
-            Guardar
+            {saving ? "…" : "Guardar"}
           </button>
         </footer>
       </form>

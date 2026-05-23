@@ -1,25 +1,24 @@
-"use client";
-
 import Link from "next/link";
-import { useOrders } from "@/lib/orders-store";
-import { products } from "@/lib/data/products";
+import type { AdminOrder, Product } from "@mercabana/core";
 import { formatPrice, formatRelativeTime, getSourceMeta } from "@/lib/format";
-import type { DemoOrder } from "@mercabana/core";
 
-export function AdminDashboard({ demoOrders }: { demoOrders: DemoOrder[] }) {
-  const userOrders = useOrders((s) => s.orders);
-  const today = [...userOrders, ...demoOrders];
-
-  const pending = today.filter((o) => o.status === "pending" || o.status === "confirmed");
-  const revenue = today.reduce((sum, o) => sum + o.total, 0);
-  const ordersBySource = today.reduce<Record<string, number>>((acc, o) => {
+export function AdminDashboard({
+  orders,
+  products,
+}: {
+  orders: AdminOrder[];
+  products: Product[];
+}) {
+  const pending = orders.filter((o) => o.status === "pending" || o.status === "confirmed");
+  const revenue = orders.reduce((sum, o) => sum + o.total, 0);
+  const ordersBySource = orders.reduce<Record<string, number>>((acc, o) => {
     acc[o.source] = (acc[o.source] ?? 0) + 1;
     return acc;
   }, {});
   const sources = Object.entries(ordersBySource).sort((a, b) => b[1] - a[1]);
   const productCount = products.filter((p) => p.isAvailable).length;
-  const tiktokPct = today.length
-    ? Math.round(((ordersBySource.tiktok ?? 0) / today.length) * 100)
+  const tiktokPct = orders.length
+    ? Math.round(((ordersBySource.tiktok ?? 0) / orders.length) * 100)
     : 0;
 
   return (
@@ -33,22 +32,8 @@ export function AdminDashboard({ demoOrders }: { demoOrders: DemoOrder[] }) {
         </h1>
       </div>
 
-      {userOrders.length > 0 && (
-        <div className="flex items-center justify-between rounded-md border border-rose-300 bg-rose-50 px-4 py-3 text-sm">
-          <span className="font-semibold text-rose-800">
-            {userOrders.length} pedido{userOrders.length === 1 ? "" : "s"} nuevo{userOrders.length === 1 ? "" : "s"} pendientes
-          </span>
-          <Link
-            href="/admin/pedidos"
-            className="text-[11px] font-semibold uppercase tracking-[0.12em] text-rose-900 underline"
-          >
-            Revisar →
-          </Link>
-        </div>
-      )}
-
       <div className="grid grid-cols-2 gap-3">
-        <Stat label="Pedidos" value={today.length.toString()} />
+        <Stat label="Pedidos" value={orders.length.toString()} />
         <Stat
           label="Por atender"
           value={pending.length.toString()}
@@ -67,32 +52,36 @@ export function AdminDashboard({ demoOrders }: { demoOrders: DemoOrder[] }) {
             Hoy
           </span>
         </div>
-        <ul className="space-y-3">
-          {sources.map(([src, n]) => {
-            const meta = getSourceMeta(src);
-            const pct = Math.round((n / today.length) * 100);
-            return (
-              <li key={src} className="flex items-center gap-3">
-                <span
-                  className={`flex h-8 w-8 items-center justify-center rounded-sm text-[10px] font-semibold uppercase tracking-wide ${meta.tone}`}
-                >
-                  {meta.initial}
-                </span>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between text-[12px]">
-                    <span className="font-medium text-[var(--color-ink)]">{meta.label}</span>
-                    <span className="text-[var(--color-ink-mute)] tabular-nums">
-                      {n} · {pct}%
-                    </span>
+        {sources.length === 0 ? (
+          <p className="text-[12px] text-[var(--color-ink-mute)]">Sin pedidos aún.</p>
+        ) : (
+          <ul className="space-y-3">
+            {sources.map(([src, n]) => {
+              const meta = getSourceMeta(src);
+              const pct = Math.round((n / orders.length) * 100);
+              return (
+                <li key={src} className="flex items-center gap-3">
+                  <span
+                    className={`flex h-8 w-8 items-center justify-center rounded-sm text-[10px] font-semibold uppercase tracking-wide ${meta.tone}`}
+                  >
+                    {meta.initial}
+                  </span>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between text-[12px]">
+                      <span className="font-medium text-[var(--color-ink)]">{meta.label}</span>
+                      <span className="text-[var(--color-ink-mute)] tabular-nums">
+                        {n} · {pct}%
+                      </span>
+                    </div>
+                    <div className="mt-1 h-1 overflow-hidden rounded-sm bg-[var(--color-canvas-soft)]">
+                      <div className="h-full bg-brand-700" style={{ width: `${pct}%` }} />
+                    </div>
                   </div>
-                  <div className="mt-1 h-1 overflow-hidden rounded-sm bg-[var(--color-canvas-soft)]">
-                    <div className="h-full bg-brand-700" style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                </li>
+              );
+            })}
+          </ul>
+        )}
         {tiktokPct > 0 && (
           <p className="mt-4 border-t border-[var(--color-line)] pt-3 text-[11px] text-[var(--color-ink-soft)]">
             TikTok genera el <span className="font-semibold text-[var(--color-ink)]">{tiktokPct}%</span> de los pedidos del día.
@@ -128,13 +117,8 @@ export function AdminDashboard({ demoOrders }: { demoOrders: DemoOrder[] }) {
                     <span className="font-display text-[14px] text-[var(--color-ink)]">
                       {o.customerName}
                     </span>
-                    {o.isNew && (
-                      <span className="rounded-sm bg-rose-700 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
-                        Nuevo
-                      </span>
-                    )}
                     <span className="text-[10px] text-[var(--color-ink-mute)]">
-                      {formatRelativeTime(o.createdAt)}
+                      {o.code} · {formatRelativeTime(o.createdAt)}
                     </span>
                   </div>
                   <p className="truncate text-[11px] text-[var(--color-ink-mute)]">

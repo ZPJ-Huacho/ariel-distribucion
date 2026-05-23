@@ -1,10 +1,33 @@
-import type { CategoryDef, Product, Tenant } from "./types";
+import type { CategoryDef, DemoOrder, Product, Tenant } from "./types";
+import type {
+  CategoryInputPayload,
+  OrderStatus,
+  ProductInputPayload,
+} from "./schemas";
 
 export type WireOrderItem = {
   name: string;
   quantity: number;
   unit: string;
   price: number;
+};
+
+export type AdminOrder = {
+  id: string;
+  tenantId: string;
+  userId: string | null;
+  code: string;
+  status: OrderStatus;
+  source: string;
+  total: number;
+  items: WireOrderItem[];
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string | null;
+  preferredTime: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ApiClientOptions = {
@@ -82,6 +105,44 @@ export function createApiClient(opts: ApiClientOptions) {
           method: "POST",
           body: JSON.stringify(input),
         }),
+    },
+    admin: {
+      categories: {
+        create: (input: CategoryInputPayload) =>
+          request<{ id: string; slug: string }>("/api/admin/categories", {
+            method: "POST",
+            body: JSON.stringify(input),
+          }),
+        update: (id: string, patch: Partial<CategoryInputPayload>) =>
+          request<{ ok: true }>(`/api/admin/categories/${id}`, {
+            method: "PATCH",
+            body: JSON.stringify(patch),
+          }),
+        remove: (id: string) =>
+          request<{ ok: true }>(`/api/admin/categories/${id}`, { method: "DELETE" }),
+      },
+      products: {
+        create: (input: ProductInputPayload) =>
+          request<{ id: string }>("/api/admin/products", {
+            method: "POST",
+            body: JSON.stringify(input),
+          }),
+        update: (id: string, patch: Partial<ProductInputPayload>) =>
+          request<{ ok: true }>(`/api/admin/products/${id}`, {
+            method: "PATCH",
+            body: JSON.stringify(patch),
+          }),
+        remove: (id: string) =>
+          request<{ ok: true }>(`/api/admin/products/${id}`, { method: "DELETE" }),
+      },
+      orders: {
+        list: () => request<AdminOrder[]>("/api/admin/orders"),
+        updateStatus: (id: string, status: OrderStatus) =>
+          request<{ ok: true }>(`/api/admin/orders/${id}/status`, {
+            method: "PATCH",
+            body: JSON.stringify({ status }),
+          }),
+      },
     },
     auth: {
       login: (input: LoginInput) =>

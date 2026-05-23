@@ -1,9 +1,16 @@
 "use client";
 
 import { ProductCard } from "@/components/product-card";
-import { productsByCategory, useProducts } from "@/lib/products-store";
-import { useCategories } from "@/lib/categories-store";
 import type { CategoryDef, Product } from "@mercabana/core";
+
+function productsByCategory(products: Product[]): Record<string, Product[]> {
+  const grouped: Record<string, Product[]> = {};
+  for (const p of [...products].sort((a, b) => a.sortOrder - b.sortOrder)) {
+    if (!grouped[p.category]) grouped[p.category] = [];
+    grouped[p.category].push(p);
+  }
+  return grouped;
+}
 
 export function CatalogSections({
   seed,
@@ -11,19 +18,11 @@ export function CatalogSections({
   activeCategory,
 }: {
   seed: Product[];
-  seedCategories?: CategoryDef[];
+  seedCategories: CategoryDef[];
   activeCategory: string;
 }) {
-  const storeProducts = useProducts((s) => s.products);
-  const hydrated = useProducts((s) => s.hydrated);
-  const products = hydrated ? storeProducts : seed;
-  const grouped = productsByCategory(products);
-
-  const storeCategories = useCategories((s) => s.categories);
-  const categoriesHydrated = useCategories((s) => s.hydrated);
-  const categories =
-    categoriesHydrated || !seedCategories ? storeCategories : seedCategories;
-  const sortedCategories = [...categories].sort(
+  const grouped = productsByCategory(seed);
+  const sortedCategories = [...seedCategories].sort(
     (a, b) => a.sortOrder - b.sortOrder,
   );
 

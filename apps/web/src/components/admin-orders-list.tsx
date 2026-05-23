@@ -1,19 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import type { DemoOrder } from "@mercabana/core";
+import { useRouter } from "next/navigation";
+import { ApiError } from "@mercabana/core";
+import type { AdminOrder, OrderStatus } from "@mercabana/core";
 import { formatPrice, formatRelativeTime, getSourceMeta } from "@/lib/format";
-import { useOrders } from "@/lib/orders-store";
+import { createBrowserApiClient } from "@/lib/api";
+import { useToast } from "@/lib/toast-store";
 import { tenant } from "@/lib/data/tenant";
 
-function buildConfirmMessage(order: DemoOrder): string {
+function buildConfirmMessage(order: AdminOrder): string {
   const itemsLine = order.items
     .map((i) => `• ${i.quantity}× ${i.name} (${i.unit})`)
     .join("\n");
   const time = order.preferredTime ?? "lo antes posible";
   return [
     `Buenos días ${order.customerName.split(" ")[0]},`,
-    `${tenant.name} le confirma el pedido ${order.id}:`,
+    `${tenant.name} le confirma el pedido ${order.code}:`,
     "",
     itemsLine,
     "",
@@ -29,7 +32,7 @@ function whatsappLink(phone: string, message: string): string {
   return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
 }
 
-const statusOptions: { value: DemoOrder["status"]; label: string; tone: string }[] = [
+const statusOptions: { value: OrderStatus; label: string; tone: string }[] = [
   { value: "pending", label: "Pendiente", tone: "bg-amber-100 text-amber-800 border-amber-300" },
   { value: "confirmed", label: "Confirmado", tone: "bg-sky-100 text-sky-800 border-sky-300" },
   { value: "preparing", label: "Preparando", tone: "bg-indigo-100 text-indigo-800 border-indigo-300" },
@@ -37,7 +40,7 @@ const statusOptions: { value: DemoOrder["status"]; label: string; tone: string }
 ];
 
 const statusMeta = Object.fromEntries(statusOptions.map((s) => [s.value, s])) as Record<
-  DemoOrder["status"],
+  OrderStatus,
   (typeof statusOptions)[number]
 >;
 
@@ -47,23 +50,26 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
-export function AdminOrdersList({ orders: demoOrders }: { orders: DemoOrder[] }) {
-  const userOrders = useOrders((s) => s.orders);
-  const setStoreStatus = useOrders((s) => s.setStatus);
-  const [demoState, setDemoState] = useState(demoOrders);
+export function AdminOrdersList({ orders }: { orders: AdminOrder[] }) {
+  const router = useRouter();
+  const showToast = useToast((s) => s.show);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const orders = [...userOrders, ...demoState];
-
-  function setStatus(id: string, status: DemoOrder["status"]) {
-    if (userOrders.some((o) => o.id === id)) {
-      setStoreStatus(id, status);
-    } else {
-      setDemoState((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+  async function setStatus(id: string, status: OrderStatus) {
+    setBusyId(id);
+    try {
+      await createBrowserApiClient().admin.orders.updateStatus(id, status);
+      router.refresh();
+    } catch (err) {
+      const msg = err instanceof ApiError ? `Error ${err.status}` : "Sin conexión";
+      showToast(`No se pudo actualizar (${msg})`);
+    } finally {
+      setBusyId(null);
     }
   }
 
-  function handleConfirm(o: DemoOrder) {
+  function handleConfirm(o: AdminOrder) {
     if (o.status === "pending") setStatus(o.id, "confirmed");
   }
 
@@ -71,9 +77,10 @@ export function AdminOrdersList({ orders: demoOrders }: { orders: DemoOrder[] })
     <ul className="space-y-2">
       {orders.map((o) => {
         const meta = getSourceMeta(o.source);
-        const stMeta = statusMeta[o.status];
+        const status = o.status === "cancelled" ? "delivered" : o.status;
+        const stMeta = statusMeta[status];
         const isOpen = openId === o.id;
-        const showQuickConfirm = o.status === "pending" || o.status === "confirmed";
+        const showQuickConfirm = status === "pending" || status === "confirmed";
         return (
           <li
             key={o.id}
@@ -90,13 +97,8 @@ export function AdminOrdersList({ orders: demoOrders }: { orders: DemoOrder[] })
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-1.5 truncate font-display text-[14px] text-[var(--color-ink)]">
+                    <span className="truncate font-display text-[14px] text-[var(--color-ink)]">
                       {o.customerName}
-                      {o.isNew && (
-                        <span className="shrink-0 animate-pulse rounded-sm bg-rose-700 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
-                          Nuevo
-                        </span>
-                      )}
                     </span>
                     <span className={`shrink-0 rounded-sm border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${stMeta.tone}`}>
                       {stMeta.label}
@@ -104,7 +106,7 @@ export function AdminOrdersList({ orders: demoOrders }: { orders: DemoOrder[] })
                   </div>
                   <div className="mt-0.5 flex items-center justify-between gap-2 text-[11px] text-[var(--color-ink-mute)]">
                     <span className="truncate">
-                      {o.items.length} producto{o.items.length === 1 ? "" : "s"} · {formatRelativeTime(o.createdAt)}
+                      {o.code} · {o.items.length} producto{o.items.length === 1 ? "" : "s"} · {formatRelativeTime(o.createdAt)}
                     </span>
                     <span className="shrink-0 font-display text-sm font-semibold tabular-nums text-[var(--color-ink)]">
                       {formatPrice(o.total)}
@@ -185,8 +187,9 @@ export function AdminOrdersList({ orders: demoOrders }: { orders: DemoOrder[] })
                         key={opt.value}
                         type="button"
                         onClick={() => setStatus(o.id, opt.value)}
-                        className={`rounded-sm border px-3 py-1 text-[10px] font-semibold uppercase tracking-wide transition ${
-                          o.status === opt.value
+                        disabled={busyId === o.id}
+                        className={`rounded-sm border px-3 py-1 text-[10px] font-semibold uppercase tracking-wide transition disabled:opacity-50 ${
+                          status === opt.value
                             ? opt.tone
                             : "border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-soft)] hover:bg-[var(--color-canvas-soft)]"
                         }`}
