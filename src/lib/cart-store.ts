@@ -32,6 +32,7 @@ export const useCart = create<CartState>((set) => ({
             emoji: product.emoji,
             gradient: product.gradient,
             quantity: 1,
+            imageUrl: product.imageUrl,
           },
         ],
       };

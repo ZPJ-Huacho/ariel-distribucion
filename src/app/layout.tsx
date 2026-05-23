@@ -1,19 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Mulish, Playfair_Display } from "next/font/google";
 import { tenant } from "@/lib/data/tenant";
 import { Toast } from "@/components/toast";
 import { StorageSync } from "@/components/storage-sync";
 import { AuthSync } from "@/components/auth-sync";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const mulish = Mulish({
+  variable: "--font-app",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
   title: `${tenant.name} · ${tenant.tagline}`,
-  description: `${tenant.name} — fruta y verdura de Mercabarna a tu casa. Pide directo desde aquí.`,
+  description: `${tenant.name} — mayorista de fruta y verdura en Mercabarna. Catálogo, precios por caja y entrega en el día.`,
   openGraph: {
     title: tenant.name,
     description: tenant.tagline,
@@ -34,8 +41,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${geistSans.variable} h-full`}>
-      <body className="min-h-full flex flex-col bg-stone-50 text-stone-900">
+    <html
+      lang="es"
+      data-scroll-behavior="smooth"
+      className={`${mulish.variable} ${playfair.variable} h-full`}
+    >
+      <body className="min-h-full flex flex-col bg-[var(--color-canvas)] text-[var(--color-ink)]">
         <AuthSync />
         <StorageSync />
         {children}

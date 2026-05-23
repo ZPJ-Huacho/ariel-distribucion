@@ -13,10 +13,10 @@ export function Toast() {
       aria-live="polite"
     >
       {message && (
-        <div className="flex items-center gap-2 rounded-full bg-stone-900 px-4 py-2.5 text-sm font-medium text-white shadow-lg">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[11px]">
-            ✓
-          </span>
+        <div className="flex items-center gap-2 rounded-md border border-brand-900 bg-brand-800 px-4 py-2.5 text-[12px] font-medium text-accent-100 shadow-lg">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
           {message}
         </div>
       )}

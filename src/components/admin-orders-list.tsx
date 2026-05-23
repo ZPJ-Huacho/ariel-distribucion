@@ -12,15 +12,15 @@ function buildConfirmMessage(order: DemoOrder): string {
     .join("\n");
   const time = order.preferredTime ?? "lo antes posible";
   return [
-    `Hola ${order.customerName.split(" ")[0]}! 👋`,
-    `Soy de ${tenant.name}. Te confirmo tu pedido ${order.id}:`,
+    `Buenos días ${order.customerName.split(" ")[0]},`,
+    `${tenant.name} le confirma el pedido ${order.id}:`,
     "",
     itemsLine,
     "",
-    `Total: ${formatPrice(order.total)} (en efectivo a la entrega)`,
-    `Te llevo el pedido ${time.toLowerCase()}.`,
+    `Total: ${formatPrice(order.total)} (pago a la entrega)`,
+    `Entrega prevista: ${time.toLowerCase()}.`,
     "",
-    "¡Gracias por confiar en nosotros! 🍊",
+    "Gracias por su confianza.",
   ].join("\n");
 }
 
@@ -30,10 +30,10 @@ function whatsappLink(phone: string, message: string): string {
 }
 
 const statusOptions: { value: DemoOrder["status"]; label: string; tone: string }[] = [
-  { value: "pending", label: "Pendiente", tone: "bg-amber-100 text-amber-700" },
-  { value: "confirmed", label: "Confirmado", tone: "bg-sky-100 text-sky-700" },
-  { value: "preparing", label: "Preparando", tone: "bg-indigo-100 text-indigo-700" },
-  { value: "delivered", label: "Entregado", tone: "bg-emerald-100 text-emerald-700" },
+  { value: "pending", label: "Pendiente", tone: "bg-amber-100 text-amber-800 border-amber-300" },
+  { value: "confirmed", label: "Confirmado", tone: "bg-sky-100 text-sky-800 border-sky-300" },
+  { value: "preparing", label: "Preparando", tone: "bg-indigo-100 text-indigo-800 border-indigo-300" },
+  { value: "delivered", label: "Entregado", tone: "bg-brand-100 text-brand-800 border-brand-300" },
 ];
 
 const statusMeta = Object.fromEntries(statusOptions.map((s) => [s.value, s])) as Record<
@@ -75,35 +75,40 @@ export function AdminOrdersList({ orders: demoOrders }: { orders: DemoOrder[] })
         const isOpen = openId === o.id;
         const showQuickConfirm = o.status === "pending" || o.status === "confirmed";
         return (
-          <li key={o.id} className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
+          <li
+            key={o.id}
+            className="overflow-hidden rounded-md border border-[var(--color-line)] bg-[var(--color-surface)]"
+          >
             <div className="flex items-stretch">
               <button
                 type="button"
                 onClick={() => setOpenId(isOpen ? null : o.id)}
-                className="flex flex-1 items-center gap-3 p-3 text-left active:bg-stone-50"
+                className="flex flex-1 items-center gap-3 p-3 text-left active:bg-[var(--color-canvas-soft)]"
               >
-                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${meta.tone}`}>
-                  {meta.emoji}
+                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-sm text-[10px] font-semibold uppercase tracking-wide ${meta.tone}`}>
+                  {meta.initial}
                 </span>
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-1.5 truncate text-sm font-semibold text-stone-900">
+                    <span className="flex items-center gap-1.5 truncate font-display text-[14px] text-[var(--color-ink)]">
                       {o.customerName}
                       {o.isNew && (
-                        <span className="shrink-0 animate-pulse rounded-full bg-rose-500 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                        <span className="shrink-0 animate-pulse rounded-sm bg-rose-700 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
                           Nuevo
                         </span>
                       )}
                     </span>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${stMeta.tone}`}>
+                    <span className={`shrink-0 rounded-sm border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${stMeta.tone}`}>
                       {stMeta.label}
                     </span>
                   </div>
-                  <div className="mt-0.5 flex items-center justify-between gap-2 text-[11px] text-stone-500">
+                  <div className="mt-0.5 flex items-center justify-between gap-2 text-[11px] text-[var(--color-ink-mute)]">
                     <span className="truncate">
                       {o.items.length} producto{o.items.length === 1 ? "" : "s"} · {formatRelativeTime(o.createdAt)}
                     </span>
-                    <span className="shrink-0 text-sm font-bold text-stone-900">{formatPrice(o.total)}</span>
+                    <span className="shrink-0 font-display text-sm font-semibold tabular-nums text-[var(--color-ink)]">
+                      {formatPrice(o.total)}
+                    </span>
                   </div>
                 </div>
               </button>
@@ -115,41 +120,64 @@ export function AdminOrdersList({ orders: demoOrders }: { orders: DemoOrder[] })
                   onClick={() => handleConfirm(o)}
                   aria-label="Confirmar por WhatsApp"
                   title="Confirmar por WhatsApp"
-                  className="flex shrink-0 items-center justify-center bg-emerald-500 px-4 text-white hover:bg-emerald-600 active:scale-95"
+                  className="flex shrink-0 items-center justify-center border-l border-[var(--color-line)] bg-emerald-800 px-4 text-emerald-50 hover:bg-emerald-900 active:scale-95"
                 >
                   <WhatsAppIcon />
                 </a>
               )}
             </div>
             {isOpen && (
-              <div className="border-t border-stone-100 bg-stone-50 p-3 text-sm">
+              <div className="border-t border-[var(--color-line)] bg-[var(--color-canvas-soft)] p-3 text-sm">
                 <div className="space-y-1">
                   {o.items.map((i, idx) => (
-                    <div key={idx} className="flex justify-between text-stone-700">
-                      <span>{i.quantity}× {i.name} <span className="text-stone-400">({i.unit})</span></span>
-                      <span className="font-medium">{formatPrice(i.price * i.quantity)}</span>
+                    <div key={idx} className="flex justify-between text-[var(--color-ink-soft)]">
+                      <span>
+                        {i.quantity}× {i.name}{" "}
+                        <span className="text-[var(--color-ink-mute)]">({i.unit})</span>
+                      </span>
+                      <span className="font-medium tabular-nums">
+                        {formatPrice(i.price * i.quantity)}
+                      </span>
                     </div>
                   ))}
                 </div>
-                <div className="mt-3 space-y-1 border-t border-stone-200 pt-3 text-[12px] text-stone-600">
-                  <div>📞 {o.customerPhone}</div>
-                  {o.customerAddress && <div>📍 {o.customerAddress}</div>}
-                  {o.preferredTime && <div>🕒 {o.preferredTime}</div>}
-                  {o.notes && <div>📝 {o.notes}</div>}
+                <div className="mt-3 space-y-1 border-t border-[var(--color-line)] pt-3 text-[12px] text-[var(--color-ink-soft)]">
+                  <div className="flex gap-2">
+                    <span className="text-[var(--color-ink-mute)]">Tel.</span>
+                    <span>{o.customerPhone}</span>
+                  </div>
+                  {o.customerAddress && (
+                    <div className="flex gap-2">
+                      <span className="text-[var(--color-ink-mute)]">Dirección</span>
+                      <span>{o.customerAddress}</span>
+                    </div>
+                  )}
+                  {o.preferredTime && (
+                    <div className="flex gap-2">
+                      <span className="text-[var(--color-ink-mute)]">Hora</span>
+                      <span>{o.preferredTime}</span>
+                    </div>
+                  )}
+                  {o.notes && (
+                    <div className="flex gap-2">
+                      <span className="text-[var(--color-ink-mute)]">Notas</span>
+                      <span>{o.notes}</span>
+                    </div>
+                  )}
                 </div>
                 <a
                   href={whatsappLink(o.customerPhone, buildConfirmMessage(o))}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => handleConfirm(o)}
-                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 active:scale-[0.99]"
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-emerald-900 bg-emerald-800 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-50 hover:bg-emerald-900 active:scale-[0.997]"
                 >
                   <WhatsAppIcon />
                   Confirmar por WhatsApp
                 </a>
-                <div className="mt-3">
-                  <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-stone-500">
-                    Cambiar estado
+                <div className="mt-4">
+                  <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-mute)]">
+                    Estado
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {statusOptions.map((opt) => (
@@ -157,10 +185,10 @@ export function AdminOrdersList({ orders: demoOrders }: { orders: DemoOrder[] })
                         key={opt.value}
                         type="button"
                         onClick={() => setStatus(o.id, opt.value)}
-                        className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
+                        className={`rounded-sm border px-3 py-1 text-[10px] font-semibold uppercase tracking-wide transition ${
                           o.status === opt.value
-                            ? `${opt.tone} ring-2 ring-offset-1 ring-current/30`
-                            : "bg-white text-stone-600 ring-1 ring-stone-200 hover:bg-stone-100"
+                            ? opt.tone
+                            : "border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-soft)] hover:bg-[var(--color-canvas-soft)]"
                         }`}
                       >
                         {opt.label}

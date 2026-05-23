@@ -1,4 +1,12 @@
-export type Category = "frutas" | "verduras" | "tropical";
+export type Category = string;
+
+export type CategoryDef = {
+  slug: string;
+  title: string;
+  lead: string;
+  icon: string;
+  sortOrder: number;
+};
 
 export type Product = {
   id: string;
@@ -12,6 +20,7 @@ export type Product = {
   isAvailable: boolean;
   isHighlighted?: boolean;
   sortOrder: number;
+  imageUrl?: string;
 };
 
 export type Tenant = {
@@ -34,6 +43,7 @@ export type CartItem = {
   emoji: string;
   gradient: string;
   quantity: number;
+  imageUrl?: string;
 };
 
 export type OrderSource = "tiktok" | "instagram" | "whatsapp" | "direct" | "google" | string;

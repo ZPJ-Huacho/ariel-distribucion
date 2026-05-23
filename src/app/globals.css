@@ -1,17 +1,51 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --color-brand-50: #f0fdf4;
-  --color-brand-100: #dcfce7;
-  --color-brand-200: #bbf7d0;
-  --color-brand-300: #86efac;
-  --color-brand-400: #4ade80;
-  --color-brand-500: #22c55e;
-  --color-brand-600: #16a34a;
-  --color-brand-700: #15803d;
-  --color-brand-800: #166534;
-  --color-brand-900: #14532d;
+  --font-sans: var(--font-app);
+  --font-serif: var(--font-display);
+
+  /* ─── PRIMARY ─ Verde Mercabarna (fresco, confianza) */
+  --color-brand-50: #eff7ed;
+  --color-brand-100: #d6ebd1;
+  --color-brand-200: #abd1a1;
+  --color-brand-300: #7eb771;
+  --color-brand-400: #5b9c4a;
+  --color-brand-500: #428233;
+  --color-brand-600: #336627;
+  --color-brand-700: #294f1f;
+  --color-brand-800: #1f3c18;
+  --color-brand-900: #142810;
+
+  /* ─── SECONDARY ─ Terracota mediterránea (calidez fruta) */
+  --color-secondary-50: #fdf3eb;
+  --color-secondary-100: #fadec7;
+  --color-secondary-200: #f5b889;
+  --color-secondary-300: #ed934e;
+  --color-secondary-400: #e2772a;
+  --color-secondary-500: #c25b18;
+  --color-secondary-600: #984712;
+  --color-secondary-700: #71350d;
+
+  /* ─── ACCENT ─ Mostaza dorada (premium, selección) */
+  --color-accent-50: #fbf6e1;
+  --color-accent-100: #f3e6ad;
+  --color-accent-200: #e6cf64;
+  --color-accent-300: #d3b62d;
+  --color-accent-400: #ad9420;
+  --color-accent-500: #847118;
+  --color-accent-600: #5e5012;
+  --color-accent-700: #423808;
+
+  /* ─── NEUTRALS ─ Off-white cálido, paper-like */
+  --color-surface: #ffffff;
+  --color-canvas: #fbfaf6;
+  --color-canvas-soft: #f3f0e6;
+  --color-canvas-deep: #1f2917;
+  --color-line: #e7e1cf;
+  --color-line-soft: #efeadb;
+  --color-ink: #18170f;
+  --color-ink-soft: #4d4a3e;
+  --color-ink-mute: #8a8478;
 }
 
 html {
@@ -21,12 +55,18 @@ html {
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #fafaf9;
-  color: #1c1917;
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans), system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  min-width: 320px;
 }
 
-/* Hide scrollbars on horizontal category scroll */
+.font-display {
+  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -35,8 +75,7 @@ body {
   scrollbar-width: none;
 }
 
-/* Smooth focus ring */
 *:focus-visible {
-  outline: 2px solid var(--color-brand-600);
+  outline: 2px solid var(--color-brand-500);
   outline-offset: 2px;
 }

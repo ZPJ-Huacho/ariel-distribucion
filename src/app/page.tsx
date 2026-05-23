@@ -1,19 +1,11 @@
 import { Header } from "@/components/header";
 import { CategoryTabs } from "@/components/category-tabs";
-import { ProductCard } from "@/components/product-card";
+import { CatalogSections } from "@/components/catalog-sections";
 import { CartButton } from "@/components/cart-button";
 import { SourceCapture } from "@/components/source-capture";
 import { RepeatLastOrder } from "@/components/repeat-last-order";
-import { getProductsByCategory } from "@/lib/data/products";
-import { tenant } from "@/lib/data/tenant";
-import type { Category } from "@/lib/data/types";
-
-const validCategories: ReadonlyArray<Category | "todas"> = [
-  "todas",
-  "frutas",
-  "verduras",
-  "tropical",
-];
+import { SiteFooter } from "@/components/site-footer";
+import { products as seed } from "@/lib/data/products";
 
 export default async function Home({
   searchParams,
@@ -21,50 +13,36 @@ export default async function Home({
   searchParams: Promise<{ cat?: string; ref?: string }>;
 }) {
   const params = await searchParams;
-  const requested = params.cat ?? "todas";
-  const active = (validCategories.includes(requested as Category | "todas")
-    ? requested
-    : "todas") as Category | "todas";
-  const list = getProductsByCategory(active);
+  const active = params.cat?.trim() ?? "todas";
 
   return (
     <>
       <SourceCapture />
       <Header adminLink />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-32">
-        <section className="pt-5 pb-2">
-          <h1 className="text-2xl font-bold leading-tight text-stone-900 sm:text-3xl">
-            {tenant.tagline}
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-32 lg:px-6">
+        <section className="border-b border-[var(--color-line)] pt-10 pb-7">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-700">
+            Catálogo mayorista · hoy
+          </span>
+          <h1 className="mt-3 font-display text-[32px] leading-[1.05] text-[var(--color-ink)] sm:text-[40px] lg:text-[48px]">
+            Producto de Mercabarna,<br />
+            directo a tu negocio.
           </h1>
-          <p className="mt-1.5 text-sm text-stone-600">
-            Pide en 30 segundos. Te lo confirmamos por WhatsApp y lo entregamos en el día.
+          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-[var(--color-ink-soft)]">
+            Precios por caja, escogidos en lonja por la mañana. Confirmamos por
+            WhatsApp y entregamos en el día. Pago a la entrega.
           </p>
         </section>
 
-        <div className="mt-3 mb-1">
+        <div className="mt-6">
           <RepeatLastOrder />
         </div>
 
         <CategoryTabs active={active} />
 
-        <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {list.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </section>
-
-        {list.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
-            No hay productos en esta categoría hoy.
-          </div>
-        )}
-
-        <footer className="mt-10 border-t border-stone-200 pt-6 text-xs text-stone-500">
-          <p className="font-medium text-stone-700">{tenant.name}</p>
-          <p>{tenant.address} · {tenant.deliveryHours}</p>
-          <p className="mt-2">© {new Date().getFullYear()} · Demo de Mercadigital</p>
-        </footer>
+        <CatalogSections seed={seed} activeCategory={active} />
       </main>
+      <SiteFooter />
       <CartButton />
     </>
   );

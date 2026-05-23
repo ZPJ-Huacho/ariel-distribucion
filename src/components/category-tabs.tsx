@@ -1,19 +1,23 @@
-import Link from "next/link";
+"use client";
 
-const categories = [
-  { id: "todas", label: "Todo", emoji: "🛒" },
-  { id: "frutas", label: "Frutas", emoji: "🍎" },
-  { id: "verduras", label: "Verduras", emoji: "🥬" },
-  { id: "tropical", label: "Tropical", emoji: "🥑" },
-] as const;
+import Link from "next/link";
+import { useCategories } from "@/lib/categories-store";
 
 export function CategoryTabs({ active }: { active: string }) {
+  const cats = useCategories((s) => s.categories);
+  const sorted = [...cats].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const tabs = [
+    { id: "todas", label: "Todo" },
+    ...sorted.map((c) => ({ id: c.slug, label: c.title })),
+  ];
+
   return (
     <nav
       aria-label="Categorías"
-      className="no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 py-3"
+      className="no-scrollbar sticky top-[64px] z-20 -mx-4 flex items-center gap-2 overflow-x-auto border-b border-[var(--color-line)] bg-[var(--color-canvas)]/95 px-4 py-2.5 backdrop-blur lg:-mx-6 lg:px-6"
     >
-      {categories.map((cat) => {
+      {tabs.map((cat) => {
         const isActive = active === cat.id;
         const href = cat.id === "todas" ? "/" : `/?cat=${cat.id}`;
         return (
@@ -21,13 +25,12 @@ export function CategoryTabs({ active }: { active: string }) {
             key={cat.id}
             href={href}
             scroll={false}
-            className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${
+            className={`shrink-0 rounded-md border px-3.5 py-1.5 text-[12px] font-medium uppercase tracking-wide transition ${
               isActive
-                ? "border-brand-600 bg-brand-600 text-white shadow-sm"
-                : "border-stone-200 bg-white text-stone-700 hover:border-stone-300"
+                ? "border-brand-800 bg-brand-800 text-accent-100"
+                : "border-[var(--color-line)] bg-transparent text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] hover:text-[var(--color-ink)]"
             }`}
           >
-            <span className="mr-1.5" aria-hidden>{cat.emoji}</span>
             {cat.label}
           </Link>
         );
