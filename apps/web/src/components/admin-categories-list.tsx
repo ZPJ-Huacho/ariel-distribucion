@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { CategoryDef } from "@/lib/data/types";
+import type { CategoryDef } from "@mercabana/core";
 import { useCategories } from "@/lib/categories-store";
 import { useProducts } from "@/lib/products-store";
 import { CategoryEditor } from "@/components/category-editor";

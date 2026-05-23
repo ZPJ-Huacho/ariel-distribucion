@@ -1,4 +1,4 @@
-import type { Tenant } from "./types";
+import type { Tenant } from "@mercabana/core";
 
 export const tenant: Tenant = {
   slug: "frutas-del-mercat",

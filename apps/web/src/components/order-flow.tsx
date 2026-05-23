@@ -10,7 +10,7 @@ import { formatPrice } from "@/lib/format";
 import { tenant } from "@/lib/data/tenant";
 import { getCurrentSource } from "@/lib/source-tracking";
 import { buildOrderMessage, buildWhatsAppLink } from "@/lib/whatsapp";
-import type { DemoOrder } from "@/lib/data/types";
+import type { DemoOrder } from "@mercabana/core";
 
 const orderSchema = z.object({
   customerName: z.string().min(2, "Pon tu nombre, por favor."),

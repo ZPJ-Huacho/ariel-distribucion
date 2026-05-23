@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Product } from "./data/types";
+import type { Product } from "@mercabana/core";
 import { products as seedProducts } from "./data/products";
 
 export type ProductInput = Omit<Product, "id" | "sortOrder"> & {

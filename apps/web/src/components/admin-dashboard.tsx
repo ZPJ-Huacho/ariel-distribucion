@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useOrders } from "@/lib/orders-store";
 import { products } from "@/lib/data/products";
 import { formatPrice, formatRelativeTime, getSourceMeta } from "@/lib/format";
-import type { DemoOrder } from "@/lib/data/types";
+import type { DemoOrder } from "@mercabana/core";
 
 export function AdminDashboard({ demoOrders }: { demoOrders: DemoOrder[] }) {
   const userOrders = useOrders((s) => s.orders);

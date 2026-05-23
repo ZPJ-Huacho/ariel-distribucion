@@ -1,4 +1,4 @@
-import type { CategoryDef } from "./types";
+import type { CategoryDef } from "@mercabana/core";
 
 export const categories: CategoryDef[] = [
   {

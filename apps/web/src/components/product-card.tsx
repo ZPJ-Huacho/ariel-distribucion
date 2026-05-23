@@ -2,7 +2,7 @@
 
 import { useCart } from "@/lib/cart-store";
 import { useToast } from "@/lib/toast-store";
-import type { Product } from "@/lib/data/types";
+import type { Product } from "@mercabana/core";
 import { formatPrice, pricePerKg } from "@/lib/format";
 import { useState } from "react";
 

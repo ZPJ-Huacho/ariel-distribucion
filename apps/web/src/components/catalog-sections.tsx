@@ -3,7 +3,7 @@
 import { ProductCard } from "@/components/product-card";
 import { productsByCategory, useProducts } from "@/lib/products-store";
 import { useCategories } from "@/lib/categories-store";
-import type { CategoryDef, Product } from "@/lib/data/types";
+import type { CategoryDef, Product } from "@mercabana/core";
 
 export function CatalogSections({
   seed,

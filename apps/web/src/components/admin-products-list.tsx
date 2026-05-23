@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Product } from "@/lib/data/types";
+import type { Product } from "@mercabana/core";
 import { formatPrice, pricePerKg } from "@/lib/format";
 import { useProducts } from "@/lib/products-store";
 import { useCategories } from "@/lib/categories-store";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { DemoOrder } from "@/lib/data/types";
+import type { DemoOrder } from "@mercabana/core";
 import { formatPrice, formatRelativeTime, getSourceMeta } from "@/lib/format";
 import { useOrders } from "@/lib/orders-store";
 import { tenant } from "@/lib/data/tenant";

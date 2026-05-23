@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { CustomerProfile, DemoOrder } from "./data/types";
+import type { CustomerProfile, DemoOrder } from "@mercabana/core";
 
 type OrdersState = {
   orders: DemoOrder[];

@@ -1,4 +1,4 @@
-import type { CartItem, Tenant } from "./data/types";
+import type { CartItem, Tenant } from "@mercabana/core";
 import { formatPrice } from "./format";
 
 export type OrderDraft = {

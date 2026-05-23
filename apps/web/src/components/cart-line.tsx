@@ -1,6 +1,6 @@
 "use client";
 
-import type { CartItem } from "@/lib/data/types";
+import type { CartItem } from "@mercabana/core";
 import { useCart } from "@/lib/cart-store";
 import { formatPrice } from "@/lib/format";
 

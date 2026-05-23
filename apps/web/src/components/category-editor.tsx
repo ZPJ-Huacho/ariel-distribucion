@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import type { CategoryDef } from "@/lib/data/types";
+import type { CategoryDef } from "@mercabana/core";
 import { slugify, useCategories } from "@/lib/categories-store";
 import { useToast } from "@/lib/toast-store";
 

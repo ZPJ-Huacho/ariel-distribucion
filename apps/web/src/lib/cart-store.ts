@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { CartItem, Product } from "./data/types";
+import type { CartItem, Product } from "@mercabana/core";
 
 type CartState = {
   items: CartItem[];

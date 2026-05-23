@@ -1,4 +1,4 @@
-import type { DemoOrder } from "./types";
+import type { DemoOrder } from "@mercabana/core";
 
 export const demoOrders: DemoOrder[] = [
   {

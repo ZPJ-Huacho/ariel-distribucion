@@ -16,7 +16,7 @@ import type {
   CustomerProfile,
   DemoOrder,
   Product,
-} from "@/lib/data/types";
+} from "@mercabana/core";
 
 export function StorageSync() {
   const orders = useOrders((s) => s.orders);

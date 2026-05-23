@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { CategoryDef } from "./data/types";
+import type { CategoryDef } from "@mercabana/core";
 import { categories as seedCategories } from "./data/categories";
 
 export type CategoryInput = Omit<CategoryDef, "sortOrder"> & {

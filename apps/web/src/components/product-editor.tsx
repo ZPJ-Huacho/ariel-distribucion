@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
-import type { Product } from "@/lib/data/types";
+import type { Product } from "@mercabana/core";
 import { useProducts } from "@/lib/products-store";
 import { useCategories } from "@/lib/categories-store";
 import { useToast } from "@/lib/toast-store";
