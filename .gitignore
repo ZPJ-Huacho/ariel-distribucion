@@ -23,6 +23,11 @@ build
 # turborepo
 .turbo
 
+# wrangler / miniflare local state
+.wrangler
+.dev.vars
+.dev.vars.*
+
 # misc
 .DS_Store
 *.pem
