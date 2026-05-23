@@ -5,7 +5,24 @@ import { CartButton } from "@/components/cart-button";
 import { SourceCapture } from "@/components/source-capture";
 import { RepeatLastOrder } from "@/components/repeat-last-order";
 import { SiteFooter } from "@/components/site-footer";
-import { products as seed } from "@/lib/data/products";
+import { createServerApiClient } from "@/lib/api";
+import { products as fallbackProducts } from "@/lib/data/products";
+import { categories as fallbackCategories } from "@/lib/data/categories";
+import type { CategoryDef, Product } from "@mercabana/core";
+
+async function loadCatalog(): Promise<{ products: Product[]; categories: CategoryDef[] }> {
+  try {
+    const client = createServerApiClient();
+    const [products, categories] = await Promise.all([
+      client.products.list(),
+      client.categories.list(),
+    ]);
+    return { products, categories };
+  } catch (err) {
+    console.warn("[home] API not reachable, using local seed:", err);
+    return { products: fallbackProducts, categories: fallbackCategories };
+  }
+}
 
 export default async function Home({
   searchParams,
@@ -14,6 +31,7 @@ export default async function Home({
 }) {
   const params = await searchParams;
   const active = params.cat?.trim() ?? "todas";
+  const { products, categories } = await loadCatalog();
 
   return (
     <>
@@ -38,9 +56,13 @@ export default async function Home({
           <RepeatLastOrder />
         </div>
 
-        <CategoryTabs active={active} />
+        <CategoryTabs active={active} seedCategories={categories} />
 
-        <CatalogSections seed={seed} activeCategory={active} />
+        <CatalogSections
+          seed={products}
+          seedCategories={categories}
+          activeCategory={active}
+        />
       </main>
       <SiteFooter />
       <CartButton />

@@ -2,46 +2,85 @@ import { and, asc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { categories, products } from "@mercabana/db";
 import { createDb } from "@mercabana/db/client";
+import type { CategoryDef, Product, Tenant } from "@mercabana/core";
 import type { AppEnv } from "../env";
 
 export const publicRoutes = new Hono<AppEnv>()
   .get("/tenant", (c) => {
-    return c.json(c.get("tenant"));
+    const t = c.get("tenant");
+    const wire: Tenant = {
+      slug: t.slug,
+      name: t.name,
+      tagline: t.tagline,
+      whatsappNumber: t.whatsappNumber,
+      address: t.address,
+      deliveryHours: t.deliveryHours,
+      primaryColor: t.primaryColor,
+      primaryColorDark: t.primaryColorDark,
+      emoji: t.emoji,
+    };
+    return c.json(wire);
   })
   .get("/categories", async (c) => {
     const db = createDb(c.env.DB);
     const tenant = c.get("tenant");
     const rows = await db
-      .select()
+      .select({
+        slug: categories.slug,
+        title: categories.title,
+        lead: categories.lead,
+        icon: categories.icon,
+        sortOrder: categories.sortOrder,
+      })
       .from(categories)
       .where(and(eq(categories.tenantId, tenant.id), eq(categories.active, true)))
       .orderBy(asc(categories.sortOrder));
-    return c.json(rows);
+    return c.json(rows satisfies CategoryDef[]);
   })
   .get("/products", async (c) => {
     const db = createDb(c.env.DB);
     const tenant = c.get("tenant");
     const categorySlug = c.req.query("category");
 
-    if (categorySlug) {
-      const cat = await db
-        .select({ id: categories.id })
-        .from(categories)
-        .where(and(eq(categories.tenantId, tenant.id), eq(categories.slug, categorySlug)))
-        .get();
-      if (!cat) return c.json([]);
-      const rows = await db
-        .select()
-        .from(products)
-        .where(and(eq(products.tenantId, tenant.id), eq(products.categoryId, cat.id)))
-        .orderBy(asc(products.sortOrder));
-      return c.json(rows);
-    }
+    const baseSelect = {
+      id: products.id,
+      name: products.name,
+      description: products.description,
+      price: products.price,
+      unit: products.unit,
+      category: categories.slug,
+      emoji: products.emoji,
+      gradient: products.gradient,
+      isAvailable: products.available,
+      isHighlighted: products.highlighted,
+      sortOrder: products.sortOrder,
+      imageR2Key: products.imageR2Key,
+    } as const;
+
+    const where = categorySlug
+      ? and(eq(products.tenantId, tenant.id), eq(categories.slug, categorySlug))
+      : eq(products.tenantId, tenant.id);
 
     const rows = await db
-      .select()
+      .select(baseSelect)
       .from(products)
-      .where(eq(products.tenantId, tenant.id))
+      .innerJoin(categories, eq(products.categoryId, categories.id))
+      .where(where)
       .orderBy(asc(products.sortOrder));
-    return c.json(rows);
+
+    const wire: Product[] = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      price: r.price,
+      unit: r.unit,
+      category: r.category,
+      emoji: r.emoji,
+      gradient: r.gradient,
+      isAvailable: r.isAvailable,
+      isHighlighted: r.isHighlighted,
+      sortOrder: r.sortOrder,
+      imageUrl: r.imageR2Key ? `/r2/${r.imageR2Key}` : undefined,
+    }));
+    return c.json(wire);
   });

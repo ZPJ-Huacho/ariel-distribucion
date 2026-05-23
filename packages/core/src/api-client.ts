@@ -1,4 +1,11 @@
-import type { Category, OrderItem, Product, Tenant } from "@mercabana/db";
+import type { CategoryDef, Product, Tenant } from "./types";
+
+export type WireOrderItem = {
+  name: string;
+  quantity: number;
+  unit: string;
+  price: number;
+};
 
 export type ApiClientOptions = {
   baseUrl: string;
@@ -24,7 +31,7 @@ export type CreateOrderInput = {
   preferredTime?: string;
   notes?: string;
   source?: string;
-  items: OrderItem[];
+  items: WireOrderItem[];
 };
 
 export type LoginInput = { email: string; password: string };
@@ -49,7 +56,7 @@ export function createApiClient(opts: ApiClientOptions) {
       ...init,
       headers,
       credentials: "include",
-    });
+    } as RequestInit);
     const text = await res.text();
     const body = text ? (safeJson(text) ?? text) : null;
     if (!res.ok) throw new ApiError(res.status, body);
@@ -61,7 +68,7 @@ export function createApiClient(opts: ApiClientOptions) {
       get: () => request<Tenant>("/api/tenant"),
     },
     categories: {
-      list: () => request<Category[]>("/api/categories"),
+      list: () => request<CategoryDef[]>("/api/categories"),
     },
     products: {
       list: (params?: { category?: string }) => {

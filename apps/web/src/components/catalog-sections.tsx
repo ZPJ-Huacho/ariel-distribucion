@@ -7,9 +7,11 @@ import type { CategoryDef, Product } from "@mercabana/core";
 
 export function CatalogSections({
   seed,
+  seedCategories,
   activeCategory,
 }: {
   seed: Product[];
+  seedCategories?: CategoryDef[];
   activeCategory: string;
 }) {
   const storeProducts = useProducts((s) => s.products);
@@ -18,7 +20,10 @@ export function CatalogSections({
   const grouped = productsByCategory(products);
 
   const storeCategories = useCategories((s) => s.categories);
-  const sortedCategories = [...storeCategories].sort(
+  const categoriesHydrated = useCategories((s) => s.hydrated);
+  const categories =
+    categoriesHydrated || !seedCategories ? storeCategories : seedCategories;
+  const sortedCategories = [...categories].sort(
     (a, b) => a.sortOrder - b.sortOrder,
   );
 
