@@ -1,6 +1,7 @@
 import { and, asc, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { categories, createDb, products } from "@mercabana/db";
+import { categories, products } from "@mercabana/db";
+import { createDb } from "@mercabana/db/client";
 import type { AppEnv } from "../env";
 
 export const publicRoutes = new Hono<AppEnv>()

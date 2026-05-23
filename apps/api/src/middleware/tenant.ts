@@ -1,11 +1,12 @@
 import { eq } from "drizzle-orm";
 import type { MiddlewareHandler } from "hono";
-import { createDb, tenants } from "@mercabana/db";
+import { tenants } from "@mercabana/db";
+import { createDb } from "@mercabana/db/client";
 import type { AppEnv } from "../env";
 
 export const resolveTenant: MiddlewareHandler<AppEnv> = async (c, next) => {
-  const host = c.req.header("host") ?? "";
-  const slug = extractSubdomain(host);
+  const explicit = c.req.header("x-tenant-slug")?.trim().toLowerCase();
+  const slug = explicit || extractSubdomain(c.req.header("host") ?? "");
   if (!slug) {
     return c.json({ error: "tenant_not_specified" }, 400);
   }

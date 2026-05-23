@@ -10,6 +10,9 @@
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@mercabana/db": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5"
   }
