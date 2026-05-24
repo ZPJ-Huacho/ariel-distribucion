@@ -8,6 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -72,32 +73,38 @@ export function UserMenu() {
         </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
-        <DropdownMenuLabel>
-          <div className="flex flex-col">
-            <span className="truncate text-[13px] font-semibold text-foreground">
-              {user.name}
-            </span>
-            <span className="truncate text-[11.5px] font-normal text-muted-foreground">
-              {user.email}
-            </span>
-          </div>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>
+            <div className="flex flex-col">
+              <span className="truncate text-[13px] font-semibold text-foreground">
+                {user.name}
+              </span>
+              <span className="truncate text-[11.5px] font-normal text-muted-foreground">
+                {user.email}
+              </span>
+            </div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        {user.role === "admin" && (
-          <DropdownMenuItem onClick={() => router.push("/admin")}>
-            <LayoutDashboard className="h-4 w-4" />
-            Panel admin
+        <DropdownMenuGroup>
+          {user.role === "admin" && (
+            <DropdownMenuItem onClick={() => router.push("/admin")}>
+              <LayoutDashboard className="h-4 w-4" />
+              Panel admin
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem onClick={() => router.push("/perfil")}>
+            <UserIcon className="h-4 w-4" />
+            Mi perfil
           </DropdownMenuItem>
-        )}
-        <DropdownMenuItem onClick={() => router.push("/perfil")}>
-          <UserIcon className="h-4 w-4" />
-          Mi perfil
-        </DropdownMenuItem>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onClick={handleLogout}>
-          <LogOut className="h-4 w-4" />
-          Cerrar sesión
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem variant="destructive" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" />
+            Cerrar sesión
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
