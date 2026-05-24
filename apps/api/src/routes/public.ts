@@ -5,6 +5,16 @@ import { createDb } from "@mercabana/db/client";
 import type { CategoryDef, Product, Tenant } from "@mercabana/core";
 import type { AppEnv } from "../env";
 
+// Hasta la Fase 9 (R2), el editor admin guarda la imagen como data URL
+// directamente en image_r2_key. Cuando migremos a R2 real, este campo
+// pasará a contener una key tipo "tenants/frutas/products/uuid.jpg"
+// y este helper construirá /r2/<key>.
+function imageKeyToUrl(key: string | null): string | undefined {
+  if (!key) return undefined;
+  if (key.startsWith("data:") || key.startsWith("http")) return key;
+  return `/r2/${key}`;
+}
+
 export const publicRoutes = new Hono<AppEnv>()
   .get("/tenant", (c) => {
     const t = c.get("tenant");
@@ -81,7 +91,7 @@ export const publicRoutes = new Hono<AppEnv>()
       isAvailable: r.isAvailable,
       isHighlighted: r.isHighlighted,
       sortOrder: r.sortOrder,
-      imageUrl: r.imageR2Key ? `/r2/${r.imageR2Key}` : undefined,
+      imageUrl: imageKeyToUrl(r.imageR2Key),
     }));
     return c.json(wire);
   });

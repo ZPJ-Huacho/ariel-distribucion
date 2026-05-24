@@ -178,6 +178,7 @@ export function ProductEditor({
       gradient: "from-stone-200 to-stone-400",
       isAvailable: data.isAvailable,
       isHighlighted: data.isHighlighted,
+      imageR2Key: data.imageUrl ?? null,
     };
     try {
       if (mode.type === "new") {
