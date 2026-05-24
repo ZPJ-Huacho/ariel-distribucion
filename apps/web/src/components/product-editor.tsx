@@ -2,11 +2,32 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ImagePlus, Trash2 } from "lucide-react";
 import { z } from "zod";
 import { ApiError } from "@mercabana/core";
 import type { CategoryDef, Product } from "@mercabana/core";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
 import { createBrowserApiClient } from "@/lib/api";
 import { useToast } from "@/lib/toast-store";
+import { cn } from "@/lib/utils";
 
 const schema = z.object({
   name: z.string().min(2, "Pon un nombre."),
@@ -115,21 +136,6 @@ export function ProductEditor({
     }
   }, [mode, initial]);
 
-  useEffect(() => {
-    if (!mode) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [mode, onClose]);
-
-  if (!mode) return null;
-
   function update<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
     if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
@@ -175,7 +181,7 @@ export function ProductEditor({
       unit: data.unit,
       category: data.category,
       emoji: data.emoji,
-      gradient: "from-stone-200 to-stone-400",
+      gradient: "",
       isAvailable: data.isAvailable,
       isHighlighted: data.isHighlighted,
       imageR2Key: data.imageUrl ?? null,
@@ -198,156 +204,142 @@ export function ProductEditor({
     }
   }
 
-  const title = mode.type === "new" ? "Nuevo producto" : "Editar producto";
+  const title = mode?.type === "new" ? "Nuevo producto" : "Editar producto";
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--color-ink)]/45 backdrop-blur-sm sm:items-center"
-      role="dialog"
-      aria-modal
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        noValidate
-        className="flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-md border-x border-t border-[var(--color-line)] bg-[var(--color-canvas)] sm:rounded-md sm:border"
-      >
-        <header className="flex items-center justify-between border-b border-[var(--color-line)] bg-[var(--color-surface)] px-5 py-3.5">
-          <div>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-700">
-              Catálogo
-            </span>
-            <h2 className="font-display text-lg text-[var(--color-ink)]">{title}</h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="rounded-md border border-[var(--color-line)] p-1.5 text-[var(--color-ink-soft)] hover:bg-[var(--color-canvas-soft)]"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
-          </button>
-        </header>
+    <Sheet open={!!mode} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
+        <SheetHeader className="border-b border-border px-5 py-4">
+          <SheetTitle>{title}</SheetTitle>
+          <SheetDescription>
+            {mode?.type === "new"
+              ? "Añade un nuevo producto al catálogo."
+              : "Edita los datos del producto."}
+          </SheetDescription>
+        </SheetHeader>
 
-        <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
-          <ImageField
-            imageUrl={values.imageUrl}
-            emoji={values.emoji}
-            uploading={uploading}
-            onPick={() => fileInputRef.current?.click()}
-            onRemove={() => update("imageUrl", undefined)}
-          />
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFile}
-          />
-
-          <Field label="Nombre" error={errors.name}>
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="flex flex-1 flex-col overflow-hidden"
+        >
+          <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+            <ImageField
+              imageUrl={values.imageUrl}
+              emoji={values.emoji}
+              uploading={uploading}
+              onPick={() => fileInputRef.current?.click()}
+              onRemove={() => update("imageUrl", undefined)}
+            />
             <input
-              type="text"
-              value={values.name}
-              onChange={(e) => update("name", e.target.value)}
-              placeholder="Naranjas de mesa"
-              className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm focus:border-brand-700 focus:outline-none"
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFile}
             />
-          </Field>
 
-          <Field label="Descripción" error={errors.description}>
-            <textarea
-              value={values.description ?? ""}
-              onChange={(e) => update("description", e.target.value)}
-              rows={2}
-              placeholder="Dulces, jugosas, perfectas para zumo."
-              className="w-full resize-none rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm focus:border-brand-700 focus:outline-none"
-            />
-          </Field>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Precio (€)" error={errors.price}>
-              <input
-                type="number"
-                step="0.5"
-                min="0"
-                value={Number.isNaN(values.price) ? "" : values.price}
-                onChange={(e) => update("price", parseFloat(e.target.value))}
-                className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm tabular-nums focus:border-brand-700 focus:outline-none"
+            <Field label="Nombre" error={errors.name} id="name">
+              <Input
+                id="name"
+                value={values.name}
+                onChange={(e) => update("name", e.target.value)}
+                placeholder="Naranjas de mesa"
               />
             </Field>
-            <Field label="Unidad" error={errors.unit}>
-              <input
-                type="text"
-                value={values.unit}
-                onChange={(e) => update("unit", e.target.value)}
-                placeholder="caja 10 kg"
-                className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm focus:border-brand-700 focus:outline-none"
+            <Field label="Descripción" error={errors.description} id="description">
+              <Textarea
+                id="description"
+                value={values.description ?? ""}
+                onChange={(e) => update("description", e.target.value)}
+                rows={2}
+                placeholder="Dulces, jugosas, perfectas para zumo."
               />
             </Field>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Categoría" error={errors.category}>
-              <select
-                value={values.category}
-                onChange={(e) => update("category", e.target.value)}
-                className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm focus:border-brand-700 focus:outline-none"
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Precio (€)" error={errors.price} id="price">
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  value={Number.isNaN(values.price) ? "" : values.price}
+                  onChange={(e) => update("price", parseFloat(e.target.value))}
+                  className="tabular-nums"
+                />
+              </Field>
+              <Field label="Unidad" error={errors.unit} id="unit">
+                <Input
+                  id="unit"
+                  value={values.unit}
+                  onChange={(e) => update("unit", e.target.value)}
+                  placeholder="caja 10 kg"
+                />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Categoría" error={errors.category} id="category">
+                <Select
+                  value={values.category}
+                  onValueChange={(v) => update("category", v ?? "")}
+                >
+                  <SelectTrigger id="category" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortedCategories.map((c) => (
+                      <SelectItem key={c.slug} value={c.slug}>
+                        {c.icon} {c.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field
+                label="Emoji"
+                hint="Aparece si no hay foto"
+                error={errors.emoji}
+                id="emoji"
               >
-                {sortedCategories.map((c) => (
-                  <option key={c.slug} value={c.slug}>
-                    {c.icon} {c.title}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Emoji" error={errors.emoji} hint="Aparece si no hay foto">
-              <input
-                type="text"
-                value={values.emoji}
-                onChange={(e) => update("emoji", e.target.value)}
-                maxLength={4}
-                className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-2.5 text-center text-2xl focus:border-brand-700 focus:outline-none"
+                <Input
+                  id="emoji"
+                  value={values.emoji}
+                  onChange={(e) => update("emoji", e.target.value)}
+                  maxLength={4}
+                  className="text-center text-xl"
+                />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <ToggleChip
+                label="Disponible hoy"
+                checked={values.isAvailable}
+                onChange={(v) => update("isAvailable", v)}
               />
-            </Field>
+              <ToggleChip
+                label="Destacar"
+                checked={values.isHighlighted}
+                onChange={(v) => update("isHighlighted", v)}
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            <Checkbox
-              label="Disponible hoy"
-              checked={values.isAvailable}
-              onChange={(v) => update("isAvailable", v)}
-            />
-            <Checkbox
-              label="Destacar"
-              checked={values.isHighlighted}
-              onChange={(v) => update("isHighlighted", v)}
-            />
-          </div>
-        </div>
-
-        <footer className="flex gap-2 border-t border-[var(--color-line)] bg-[var(--color-surface)] px-5 py-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 rounded-md border border-[var(--color-line)] py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-soft)] hover:bg-[var(--color-canvas-soft)]"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex-1 rounded-md border border-brand-900 bg-brand-800 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-100 hover:bg-brand-900 disabled:opacity-60"
-          >
-            {saving ? "…" : "Guardar"}
-          </button>
-        </footer>
-      </form>
-    </div>
+          <SheetFooter className="flex-row gap-2 border-t border-border bg-card px-5 py-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saving} className="flex-1">
+              {saving ? "Guardando…" : "Guardar"}
+            </Button>
+          </SheetFooter>
+        </form>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -365,47 +357,46 @@ function ImageField({
   onRemove: () => void;
 }) {
   return (
-    <div>
-      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-soft)]">
-        Foto
-      </span>
+    <div className="space-y-1.5">
+      <Label>Foto</Label>
       <div className="flex items-center gap-3">
-        <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[var(--color-line)] bg-[var(--color-canvas-soft)]">
+        <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-muted">
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={imageUrl}
-              alt=""
-              className="h-full w-full object-cover"
-            />
+            <img src={imageUrl} alt="" className="h-full w-full object-cover" />
           ) : (
             <span className="text-4xl opacity-80" aria-hidden>
               {emoji}
             </span>
           )}
           {uploading && (
-            <span className="absolute inset-0 flex items-center justify-center bg-[var(--color-ink)]/60 text-[10px] font-semibold uppercase tracking-wider text-white">
+            <span className="absolute inset-0 flex items-center justify-center bg-foreground/60 text-[10px] font-semibold uppercase tracking-wider text-background">
               Subiendo
             </span>
           )}
         </div>
         <div className="flex flex-col gap-1.5">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onPick}
             disabled={uploading}
-            className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-ink)] hover:bg-[var(--color-canvas-soft)] disabled:opacity-50"
           >
+            <ImagePlus className="h-3.5 w-3.5" />
             {imageUrl ? "Cambiar foto" : "Subir foto"}
-          </button>
+          </Button>
           {imageUrl && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={onRemove}
-              className="rounded-md border border-[var(--color-line)] px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-ink-mute)] hover:text-rose-700"
+              className="text-muted-foreground hover:text-destructive"
             >
+              <Trash2 className="h-3.5 w-3.5" />
               Quitar
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -417,30 +408,28 @@ function Field({
   label,
   hint,
   error,
+  id,
   children,
 }: {
   label: string;
   hint?: string;
   error?: string;
+  id: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-soft)]">
-        {label}
-      </span>
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
       {children}
       {hint && !error && (
-        <span className="mt-1 block text-[11px] text-[var(--color-ink-mute)]">{hint}</span>
+        <p className="text-[11.5px] text-muted-foreground">{hint}</p>
       )}
-      {error && (
-        <span className="mt-1 block text-[11px] font-medium text-rose-700">{error}</span>
-      )}
-    </label>
+      {error && <p className="text-[11.5px] font-medium text-destructive">{error}</p>}
+    </div>
   );
 }
 
-function Checkbox({
+function ToggleChip({
   label,
   checked,
   onChange,
@@ -453,23 +442,34 @@ function Checkbox({
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className={`flex items-center gap-2 rounded-md border px-3 py-2.5 text-left text-[12px] font-medium transition ${
-        checked
-          ? "border-brand-700 bg-brand-50 text-brand-800"
-          : "border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-soft)]"
-      }`}
       aria-pressed={checked}
+      className={cn(
+        "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-[12.5px] font-medium transition",
+        checked
+          ? "border-primary/40 bg-accent text-accent-foreground"
+          : "border-border bg-background text-muted-foreground hover:text-foreground",
+      )}
     >
       <span
-        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
+        className={cn(
+          "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
           checked
-            ? "border-brand-700 bg-brand-700 text-white"
-            : "border-[var(--color-line)] bg-white"
-        }`}
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-border bg-background",
+        )}
         aria-hidden
       >
         {checked && (
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <polyline points="20 6 9 17 4 12" />
           </svg>
         )}
@@ -478,3 +478,4 @@ function Checkbox({
     </button>
   );
 }
+

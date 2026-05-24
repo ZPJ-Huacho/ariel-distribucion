@@ -2,13 +2,42 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { ApiError } from "@mercabana/core";
 import type { CategoryDef, Product } from "@mercabana/core";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatPrice, pricePerKg } from "@/lib/format";
 import { createBrowserApiClient } from "@/lib/api";
 import { useToast } from "@/lib/toast-store";
 import { ProductEditor } from "@/components/product-editor";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { cn } from "@/lib/utils";
 
 type EditorMode = { type: "new" } | { type: "edit"; product: Product } | null;
 type SortKey = "name" | "category" | "price" | "perKg" | "status";
@@ -70,11 +99,8 @@ export function AdminProductsList({
         }
         case "price":
           return (a.price - b.price) * dir;
-        case "perKg": {
-          const va = perKgValue(a);
-          const vb = perKgValue(b);
-          return (va - vb) * dir;
-        }
+        case "perKg":
+          return (perKgValue(a) - perKgValue(b)) * dir;
         case "status":
           return ((a.isAvailable ? 1 : 0) - (b.isAvailable ? 1 : 0)) * dir;
       }
@@ -89,10 +115,6 @@ export function AdminProductsList({
       setSortKey(key);
       setSortDir("asc");
     }
-  }
-
-  function openDelete(p: Product) {
-    setDeleteTarget(p);
   }
 
   async function confirmDelete() {
@@ -124,227 +146,270 @@ export function AdminProductsList({
   const totalAvailable = products.filter((p) => p.isAvailable).length;
 
   return (
-    <>
-      <header className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)]">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <div>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-ink-mute)]">
-              Inventario
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Catálogo
+          </p>
+          <h1 className="mt-1 text-[28px] font-semibold tracking-tight text-foreground">
+            Productos
+          </h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">
+            {products.length} producto{products.length === 1 ? "" : "s"} ·{" "}
+            <span>
+              {totalAvailable} disponible{totalAvailable === 1 ? "" : "s"}
             </span>
-            <p className="font-display text-[15px] text-[var(--color-ink)]">
-              {products.length} producto{products.length === 1 ? "" : "s"} ·{" "}
-              <span className="text-[var(--color-ink-soft)]">
-                {totalAvailable} disponible{totalAvailable === 1 ? "" : "s"}
-              </span>
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setEditor({ type: "new" })}
-            className="inline-flex items-center gap-1.5 rounded-md border border-brand-900 bg-brand-800 px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-100 hover:bg-brand-900"
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Nuevo producto
-          </button>
+          </p>
         </div>
-        <div className="grid grid-cols-1 gap-2 border-t border-[var(--color-line)] px-4 py-3 sm:grid-cols-[1fr_auto_auto]">
-          <SearchInput value={search} onChange={setSearch} />
-          <select
-            value={filterCat}
-            onChange={(e) => setFilterCat(e.target.value)}
-            className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[12px] focus:border-brand-700 focus:outline-none"
-          >
-            <option value="todas">Todas las categorías</option>
-            {sortedCategories.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c.icon} {c.title}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
-            className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[12px] focus:border-brand-700 focus:outline-none"
-          >
-            <option value="all">Cualquier estado</option>
-            <option value="available">Disponibles</option>
-            <option value="unavailable">Agotados</option>
-          </select>
-        </div>
-      </header>
+        <Button onClick={() => setEditor({ type: "new" })} className="self-start">
+          <Plus className="h-4 w-4" />
+          Nuevo producto
+        </Button>
+      </div>
 
-      {sorted.length === 0 ? (
-        <div className="rounded-md border border-dashed border-[var(--color-line)] p-10 text-center text-sm text-[var(--color-ink-mute)]">
-          No hay productos que coincidan con los filtros.
+      <Card className="p-0">
+        <div className="flex flex-col gap-2 border-b border-border p-3 sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar producto…"
+              className="pl-9"
+            />
+          </div>
+          <Select value={filterCat} onValueChange={(v) => setFilterCat(v ?? "todas")}>
+            <SelectTrigger className="sm:w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas las categorías</SelectItem>
+              {sortedCategories.map((c) => (
+                <SelectItem key={c.slug} value={c.slug}>
+                  {c.icon} {c.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={filterStatus}
+            onValueChange={(v) => setFilterStatus((v ?? "all") as typeof filterStatus)}
+          >
+            <SelectTrigger className="sm:w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Cualquier estado</SelectItem>
+              <SelectItem value="available">Disponibles</SelectItem>
+              <SelectItem value="unavailable">Agotados</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      ) : (
-        <>
-          <div className="hidden overflow-x-auto rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] md:block">
-            <table className="w-full min-w-[820px] border-collapse text-left text-sm">
-              <thead className="bg-[var(--color-canvas-soft)] text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-mute)]">
-                <tr>
-                  <th className="w-14 px-3 py-2.5"></th>
-                  <SortHeader label="Producto" k="name" sortKey={sortKey} sortDir={sortDir} onSort={setSort} />
-                  <SortHeader label="Categoría" k="category" sortKey={sortKey} sortDir={sortDir} onSort={setSort} />
-                  <th className="px-3 py-2.5">Unidad</th>
-                  <SortHeader label="Precio" k="price" sortKey={sortKey} sortDir={sortDir} onSort={setSort} align="right" />
-                  <SortHeader label="€/kg" k="perKg" sortKey={sortKey} sortDir={sortDir} onSort={setSort} align="right" />
-                  <SortHeader label="Estado" k="status" sortKey={sortKey} sortDir={sortDir} onSort={setSort} align="center" />
-                  <th className="w-12 px-3 py-2.5"></th>
-                </tr>
-              </thead>
-              <tbody>
+
+        <CardContent className="p-0">
+          {sorted.length === 0 ? (
+            <div className="p-10 text-center text-[13px] text-muted-foreground">
+              No hay productos que coincidan con los filtros.
+            </div>
+          ) : (
+            <>
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-16"></TableHead>
+                      <SortHeader k="name" sortKey={sortKey} sortDir={sortDir} onSort={setSort}>
+                        Producto
+                      </SortHeader>
+                      <SortHeader k="category" sortKey={sortKey} sortDir={sortDir} onSort={setSort}>
+                        Categoría
+                      </SortHeader>
+                      <TableHead>Unidad</TableHead>
+                      <SortHeader
+                        k="price"
+                        sortKey={sortKey}
+                        sortDir={sortDir}
+                        onSort={setSort}
+                        className="text-right"
+                      >
+                        Precio
+                      </SortHeader>
+                      <SortHeader
+                        k="perKg"
+                        sortKey={sortKey}
+                        sortDir={sortDir}
+                        onSort={setSort}
+                        className="text-right"
+                      >
+                        €/kg
+                      </SortHeader>
+                      <SortHeader
+                        k="status"
+                        sortKey={sortKey}
+                        sortDir={sortDir}
+                        onSort={setSort}
+                        className="text-center"
+                      >
+                        Estado
+                      </SortHeader>
+                      <TableHead className="w-32 text-right"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sorted.map((p) => {
+                      const cat = categoryMap.get(p.category);
+                      const perKg = pricePerKg(p.unit, p.price);
+                      return (
+                        <TableRow
+                          key={p.id}
+                          className={cn(p.isAvailable ? "" : "opacity-60")}
+                        >
+                          <TableCell>
+                            <Thumb product={p} />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[13px] font-semibold text-foreground">
+                                {p.name}
+                              </span>
+                              {p.isHighlighted && (
+                                <Badge
+                                  variant="secondary"
+                                  className="rounded-full text-[10px]"
+                                >
+                                  Top
+                                </Badge>
+                              )}
+                            </div>
+                            {p.description && (
+                              <div className="line-clamp-1 max-w-[280px] text-[11.5px] text-muted-foreground">
+                                {p.description}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {cat ? (
+                              <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
+                                <span aria-hidden>{cat.icon}</span>
+                                {cat.title}
+                              </span>
+                            ) : (
+                              <span className="text-[12px] italic text-destructive">
+                                sin categoría
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-[12px] text-muted-foreground">
+                            {p.unit}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold tabular-nums">
+                            {formatPrice(p.price)}
+                          </TableCell>
+                          <TableCell className="text-right text-[12px] tabular-nums text-muted-foreground">
+                            {perKg ?? "—"}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <AvailableToggle
+                              available={p.isAvailable}
+                              onToggle={() => toggleAvailable(p)}
+                            />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setEditor({ type: "edit", product: p })}
+                                aria-label="Editar"
+                                className="h-8 w-8"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeleteTarget(p)}
+                                aria-label="Eliminar"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile cards */}
+              <ul className="divide-y divide-border md:hidden">
                 {sorted.map((p) => {
                   const cat = categoryMap.get(p.category);
-                  const perKg = pricePerKg(p.unit, p.price);
                   return (
-                    <tr
+                    <li
                       key={p.id}
-                      className={`border-t border-[var(--color-line)] transition hover:bg-[var(--color-canvas-soft)]/40 ${
-                        p.isAvailable ? "" : "opacity-65"
-                      }`}
+                      className={cn(
+                        "flex items-center gap-3 p-3",
+                        p.isAvailable ? "" : "opacity-60",
+                      )}
                     >
-                      <td className="px-3 py-2.5">
-                        <Thumb product={p} />
-                      </td>
-                      <td className="px-3 py-2.5">
+                      <Thumb product={p} large />
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-display text-[14px] text-[var(--color-ink)]">
+                          <span className="truncate text-[13.5px] font-semibold text-foreground">
                             {p.name}
                           </span>
                           {p.isHighlighted && (
-                            <span className="rounded-sm border border-accent-500/70 bg-accent-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-accent-700">
-                              Destacado
-                            </span>
+                            <Badge variant="secondary" className="rounded-full text-[10px]">
+                              Top
+                            </Badge>
                           )}
                         </div>
-                        {p.description && (
-                          <div className="line-clamp-1 max-w-[280px] text-[11px] text-[var(--color-ink-mute)]">
-                            {p.description}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        {cat ? (
-                          <span className="inline-flex items-center gap-1.5 text-[12px] text-[var(--color-ink-soft)]">
-                            <span aria-hidden>{cat.icon}</span>
-                            {cat.title}
-                          </span>
-                        ) : (
-                          <span className="text-[12px] italic text-rose-700">
-                            sin categoría
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5 text-[12px] text-[var(--color-ink-soft)]">
-                        {p.unit}
-                      </td>
-                      <td className="px-3 py-2.5 text-right font-display tabular-nums text-[var(--color-ink)]">
-                        {formatPrice(p.price)}
-                      </td>
-                      <td className="px-3 py-2.5 text-right text-[12px] tabular-nums text-[var(--color-ink-soft)]">
-                        {perKg ?? "—"}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex justify-center">
-                          <AvailableToggle
-                            available={p.isAvailable}
-                            onToggle={() => toggleAvailable(p)}
-                          />
+                        <div className="text-[11.5px] text-muted-foreground">
+                          {cat ? `${cat.icon} ${cat.title}` : "sin categoría"} · {p.unit}
                         </div>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
+                        <div className="mt-1 text-[14px] font-semibold tabular-nums text-foreground">
+                          {formatPrice(p.price)}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <AvailableToggle
+                          available={p.isAvailable}
+                          onToggle={() => toggleAvailable(p)}
+                        />
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => setEditor({ type: "edit", product: p })}
-                            className="rounded-md border border-[var(--color-line)] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-ink)] hover:bg-[var(--color-canvas-soft)]"
+                            className="h-8 w-8"
+                            aria-label="Editar"
                           >
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openDelete(p)}
-                            className="rounded-md border border-[var(--color-line)] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-rose-700 hover:bg-rose-50"
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteTarget(p)}
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            aria-label="Eliminar"
                           >
-                            Eliminar
-                          </button>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </li>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
-
-          <ul className="space-y-2 md:hidden">
-            {sorted.map((p) => {
-              const cat = categoryMap.get(p.category);
-              const perKg = pricePerKg(p.unit, p.price);
-              return (
-                <li
-                  key={p.id}
-                  className={`flex items-center gap-3 rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-3 transition ${
-                    p.isAvailable ? "" : "opacity-65"
-                  }`}
-                >
-                  <Thumb product={p} large />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-display text-[14px] text-[var(--color-ink)]">
-                        {p.name}
-                      </span>
-                      {p.isHighlighted && (
-                        <span className="rounded-sm border border-accent-500/70 bg-accent-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-accent-700">
-                          Top
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-[11px] text-[var(--color-ink-mute)]">
-                      {cat ? `${cat.icon} ${cat.title}` : "sin categoría"} · {p.unit}
-                    </div>
-                    <div className="mt-1 flex items-center gap-3">
-                      <span className="font-display text-sm font-semibold tabular-nums text-[var(--color-ink)]">
-                        {formatPrice(p.price)}
-                      </span>
-                      {perKg && (
-                        <span className="text-[11px] tabular-nums text-[var(--color-ink-soft)]">
-                          {perKg}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <AvailableToggle
-                      available={p.isAvailable}
-                      onToggle={() => toggleAvailable(p)}
-                    />
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setEditor({ type: "edit", product: p })}
-                        className="rounded-md border border-[var(--color-line)] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-ink)] hover:bg-[var(--color-canvas-soft)]"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openDelete(p)}
-                        className="rounded-md border border-[var(--color-line)] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-rose-700 hover:bg-rose-50"
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </>
-      )}
+              </ul>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <ProductEditor
         mode={editor}
@@ -356,18 +421,15 @@ export function AdminProductsList({
         tone="danger"
         title={deleteTarget ? `Eliminar "${deleteTarget.name}"` : ""}
         description={
-          deleteTarget && (
-            <p>
-              Vas a quitar este producto del catálogo. Esta acción no se puede
-              deshacer.
-            </p>
-          )
+          deleteTarget
+            ? "Vas a quitar este producto del catálogo. Esta acción no se puede deshacer."
+            : undefined
         }
         confirmLabel="Eliminar"
         onConfirm={confirmDelete}
         onClose={() => setDeleteTarget(null)}
       />
-    </>
+    </div>
   );
 }
 
@@ -379,47 +441,54 @@ function perKgValue(p: Product): number {
 }
 
 function SortHeader({
-  label,
   k,
   sortKey,
   sortDir,
   onSort,
-  align = "left",
+  className,
+  children,
 }: {
-  label: string;
   k: SortKey;
   sortKey: SortKey;
   sortDir: SortDir;
   onSort: (k: SortKey) => void;
-  align?: "left" | "right" | "center";
+  className?: string;
+  children: React.ReactNode;
 }) {
   const active = sortKey === k;
-  const arrow = active ? (sortDir === "asc" ? "▲" : "▼") : "";
-  const justify =
-    align === "right" ? "justify-end" : align === "center" ? "justify-center" : "justify-start";
   return (
-    <th className="px-3 py-2.5">
+    <TableHead className={className}>
       <button
         type="button"
         onClick={() => onSort(k)}
-        className={`flex w-full items-center gap-1 ${justify} text-[10px] font-semibold uppercase tracking-[0.14em] ${
-          active ? "text-[var(--color-ink)]" : "text-[var(--color-ink-mute)]"
-        }`}
+        className={cn(
+          "inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em] transition",
+          active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+        )}
       >
-        {label}
-        <span aria-hidden className="text-[8px]">
-          {arrow}
-        </span>
+        {children}
+        {active ? (
+          sortDir === "asc" ? (
+            <ArrowUp className="h-3 w-3" />
+          ) : (
+            <ArrowDown className="h-3 w-3" />
+          )
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-50" />
+        )}
       </button>
-    </th>
+    </TableHead>
   );
 }
 
 function Thumb({ product, large = false }: { product: Product; large?: boolean }) {
-  const size = large ? "h-14 w-14" : "h-10 w-10";
+  const size = large ? "h-12 w-12" : "h-10 w-10";
   return (
     <div
-      className={`flex ${size} shrink-0 items-center justify-center overflow-hidden rounded-sm border border-[var(--color-line)] bg-[var(--color-canvas-soft)]`}
+      className={cn(
+        "flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted",
+        size,
+      )}
       aria-hidden
     >
       {product.imageUrl ? (
@@ -446,50 +515,17 @@ function AvailableToggle({
       aria-checked={available}
       aria-label="Disponible hoy"
       onClick={onToggle}
-      className={`relative h-5 w-9 shrink-0 rounded-full transition ${
-        available ? "bg-brand-700" : "bg-[var(--color-line)]"
-      }`}
+      className={cn(
+        "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition",
+        available ? "bg-primary" : "bg-input",
+      )}
     >
       <span
-        className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition ${
-          available ? "left-[18px]" : "left-0.5"
-        }`}
+        className={cn(
+          "absolute h-4 w-4 rounded-full bg-background shadow-sm transition",
+          available ? "left-[18px]" : "left-0.5",
+        )}
       />
     </button>
-  );
-}
-
-function SearchInput({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="relative">
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-ink-mute)]"
-        aria-hidden
-      >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-      <input
-        type="search"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Buscar producto…"
-        className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] py-2 pl-8 pr-3 text-[12px] focus:border-brand-700 focus:outline-none"
-      />
-    </div>
   );
 }
