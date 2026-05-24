@@ -11,14 +11,14 @@
     {
       "binding": "DB",
       "database_name": "mercabana",
-      "database_id": "REPLACE_AFTER_WRANGLER_D1_CREATE",
+      "database_id": "e405f5f4-4fb2-44e1-9540-b7cf053b72ec",
       "migrations_dir": "../../packages/db/migrations"
     }
   ],
   "kv_namespaces": [
     {
       "binding": "SESSIONS",
-      "id": "REPLACE_AFTER_WRANGLER_KV_CREATE"
+      "id": "4a92547f8f55491ebb2f48fbb5c05b65"
     }
   ],
   "r2_buckets": [
