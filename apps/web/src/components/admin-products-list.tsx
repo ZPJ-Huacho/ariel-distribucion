@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError } from "@mercabana/core";
 import type { CategoryDef, Product } from "@mercabana/core";
@@ -34,7 +33,6 @@ export function AdminProductsList({
   const [filterStatus, setFilterStatus] = useState<"all" | "available" | "unavailable">("all");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
   const categoryMap = useMemo(() => {
     const m = new Map<string, { title: string; icon: string }>();
@@ -94,7 +92,6 @@ export function AdminProductsList({
   }
 
   function openDelete(p: Product) {
-    setMenuOpenId(null);
     setDeleteTarget(p);
   }
 
@@ -259,18 +256,22 @@ export function AdminProductsList({
                         </div>
                       </td>
                       <td className="px-3 py-2.5">
-                        <ActionMenu
-                          open={menuOpenId === p.id}
-                          onToggle={() =>
-                            setMenuOpenId(menuOpenId === p.id ? null : p.id)
-                          }
-                          onClose={() => setMenuOpenId(null)}
-                          onEdit={() => {
-                            setMenuOpenId(null);
-                            setEditor({ type: "edit", product: p });
-                          }}
-                          onDelete={() => openDelete(p)}
-                        />
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setEditor({ type: "edit", product: p })}
+                            className="rounded-md border border-[var(--color-line)] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-ink)] hover:bg-[var(--color-canvas-soft)]"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openDelete(p)}
+                            className="rounded-md border border-[var(--color-line)] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-rose-700 hover:bg-rose-50"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -321,18 +322,22 @@ export function AdminProductsList({
                       available={p.isAvailable}
                       onToggle={() => toggleAvailable(p)}
                     />
-                    <ActionMenu
-                      open={menuOpenId === p.id}
-                      onToggle={() =>
-                        setMenuOpenId(menuOpenId === p.id ? null : p.id)
-                      }
-                      onClose={() => setMenuOpenId(null)}
-                      onEdit={() => {
-                        setMenuOpenId(null);
-                        setEditor({ type: "edit", product: p });
-                      }}
-                      onDelete={() => openDelete(p)}
-                    />
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setEditor({ type: "edit", product: p })}
+                        className="rounded-md border border-[var(--color-line)] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-ink)] hover:bg-[var(--color-canvas-soft)]"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openDelete(p)}
+                        className="rounded-md border border-[var(--color-line)] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-rose-700 hover:bg-rose-50"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
                   </div>
                 </li>
               );
@@ -450,125 +455,6 @@ function AvailableToggle({
           available ? "left-[18px]" : "left-0.5"
         }`}
       />
-    </button>
-  );
-}
-
-function ActionMenu({
-  open,
-  onToggle,
-  onClose,
-  onEdit,
-  onDelete,
-}: {
-  open: boolean;
-  onToggle: () => void;
-  onClose: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!open || !triggerRef.current) return;
-    function compute() {
-      if (!triggerRef.current) return;
-      const rect = triggerRef.current.getBoundingClientRect();
-      setPos({
-        top: rect.bottom + 4,
-        right: Math.max(8, window.innerWidth - rect.right),
-      });
-    }
-    compute();
-    window.addEventListener("scroll", compute, true);
-    window.addEventListener("resize", compute);
-    return () => {
-      window.removeEventListener("scroll", compute, true);
-      window.removeEventListener("resize", compute);
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    function onDown(e: MouseEvent) {
-      const t = e.target as Node;
-      if (
-        triggerRef.current &&
-        !triggerRef.current.contains(t) &&
-        menuRef.current &&
-        !menuRef.current.contains(t)
-      ) {
-        onClose();
-      }
-    }
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [open, onClose]);
-
-  return (
-    <>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={onToggle}
-        aria-label="Más acciones"
-        aria-haspopup
-        aria-expanded={open}
-        className={`flex h-8 w-8 items-center justify-center rounded-md border transition ${
-          open
-            ? "border-brand-700 bg-brand-50 text-brand-800"
-            : "border-[var(--color-line)] text-[var(--color-ink-soft)] hover:bg-[var(--color-canvas-soft)]"
-        }`}
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-          <circle cx="5" cy="12" r="1.6" />
-          <circle cx="12" cy="12" r="1.6" />
-          <circle cx="19" cy="12" r="1.6" />
-        </svg>
-      </button>
-      {mounted && open && pos &&
-        createPortal(
-          <div
-            ref={menuRef}
-            style={{ position: "fixed", top: pos.top, right: pos.right }}
-            className="z-50 w-44 overflow-hidden rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] shadow-xl"
-          >
-            <MenuItem onClick={onEdit} label="Editar" />
-            <MenuItem onClick={onDelete} label="Eliminar" tone="danger" />
-          </div>,
-          document.body,
-        )}
-    </>
-  );
-}
-
-function MenuItem({
-  label,
-  onClick,
-  tone = "neutral",
-}: {
-  label: string;
-  onClick: () => void;
-  tone?: "neutral" | "danger";
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`block w-full px-4 py-2 text-left text-[12px] font-medium uppercase tracking-wide transition ${
-        tone === "danger"
-          ? "text-rose-700 hover:bg-rose-50"
-          : "text-[var(--color-ink)] hover:bg-[var(--color-canvas-soft)]"
-      }`}
-    >
-      {label}
     </button>
   );
 }
