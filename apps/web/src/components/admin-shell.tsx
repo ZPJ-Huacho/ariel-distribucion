@@ -13,9 +13,19 @@ import {
   Receipt,
   Sprout,
   Tags,
+  User as UserIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -114,11 +124,47 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               {tenant.name}
             </span>
           </div>
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary text-[10.5px] font-semibold text-primary-foreground">
-              {user.name.split(" ").slice(0, 2).map((p) => p[0]).join("").toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-primary text-[10.5px] font-semibold text-primary-foreground">
+                  {user.name.split(" ").slice(0, 2).map((p) => p[0]).join("").toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span className="truncate text-[13px] font-semibold text-foreground">
+                      {user.name}
+                    </span>
+                    <span className="truncate text-[11.5px] font-normal text-muted-foreground">
+                      {user.email}
+                    </span>
+                  </div>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={() => router.push("/perfil")}>
+                  <UserIcon className="h-4 w-4" />
+                  Mi perfil
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/")}>
+                  <ExternalLink className="h-4 w-4" />
+                  Ver tienda
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem variant="destructive" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+                  Cerrar sesión
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
         <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">
