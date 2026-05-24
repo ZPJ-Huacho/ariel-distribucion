@@ -12,17 +12,17 @@ import { Separator } from "@/components/ui/separator";
 import { formatPrice, formatRelativeTime, getSourceMeta } from "@/lib/format";
 import { createBrowserApiClient } from "@/lib/api";
 import { useToast } from "@/lib/toast-store";
-import { tenant } from "@/lib/data/tenant";
+import { useTenant } from "@/components/tenant-provider";
 import { cn } from "@/lib/utils";
 
-function buildConfirmMessage(order: AdminOrder): string {
+function buildConfirmMessage(order: AdminOrder, tenantName: string): string {
   const itemsLine = order.items
     .map((i) => `• ${i.quantity}× ${i.name} (${i.unit})`)
     .join("\n");
   const time = order.preferredTime ?? "lo antes posible";
   return [
     `Buenos días ${order.customerName.split(" ")[0]},`,
-    `${tenant.name} le confirma el pedido ${order.code}:`,
+    `${tenantName} le confirma el pedido ${order.code}:`,
     "",
     itemsLine,
     "",
@@ -68,6 +68,7 @@ const statusMeta = Object.fromEntries(statusOptions.map((s) => [s.value, s])) as
 
 export function AdminOrdersList({ orders }: { orders: AdminOrder[] }) {
   const router = useRouter();
+  const tenant = useTenant();
   const showToast = useToast((s) => s.show);
   const [openId, setOpenId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -158,7 +159,7 @@ export function AdminOrdersList({ orders }: { orders: AdminOrder[] }) {
                 </button>
                 {showQuickConfirm && (
                   <a
-                    href={whatsappLink(o.customerPhone, buildConfirmMessage(o))}
+                    href={whatsappLink(o.customerPhone, buildConfirmMessage(o, tenant.name))}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => handleConfirm(o)}
@@ -212,7 +213,7 @@ export function AdminOrdersList({ orders }: { orders: AdminOrder[] }) {
                     )}
                   </dl>
                   <a
-                    href={whatsappLink(o.customerPhone, buildConfirmMessage(o))}
+                    href={whatsappLink(o.customerPhone, buildConfirmMessage(o, tenant.name))}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => handleConfirm(o)}

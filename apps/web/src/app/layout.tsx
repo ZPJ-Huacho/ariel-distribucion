@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Playfair_Display } from "next/font/google";
-import { tenant } from "@/lib/data/tenant";
 import { Toaster } from "@/components/ui/sonner";
 import { StorageSync } from "@/components/storage-sync";
 import { AuthSync } from "@/components/auth-sync";
+import { TenantProvider } from "@/components/tenant-provider";
+import { getCurrentTenant } from "@/lib/api-server";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -18,16 +19,19 @@ const playfair = Playfair_Display({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: `${tenant.name} · ${tenant.tagline}`,
-  description: `${tenant.name} — mayorista de fruta y verdura en Mercabarna. Catálogo, precios por caja y entrega en el día.`,
-  openGraph: {
-    title: tenant.name,
-    description: tenant.tagline,
-    type: "website",
-    locale: "es_ES",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const tenant = await getCurrentTenant();
+  return {
+    title: `${tenant.name} · ${tenant.tagline}`,
+    description: `${tenant.name} — ${tenant.tagline}. Catálogo, precios por caja y entrega en el día.`,
+    openGraph: {
+      title: tenant.name,
+      description: tenant.tagline,
+      type: "website",
+      locale: "es_ES",
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#294f1f",
@@ -35,11 +39,12 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const tenant = await getCurrentTenant();
   return (
     <html
       lang="es"
@@ -47,10 +52,12 @@ export default function RootLayout({
       className={cn("h-full", geist.variable, playfair.variable)}
     >
       <body className="min-h-full flex flex-col font-sans">
-        <AuthSync />
-        <StorageSync />
-        {children}
-        <Toaster richColors closeButton />
+        <TenantProvider tenant={tenant}>
+          <AuthSync />
+          <StorageSync />
+          {children}
+          <Toaster richColors closeButton />
+        </TenantProvider>
       </body>
     </html>
   );

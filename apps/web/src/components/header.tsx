@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { MessageCircle, Sprout } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { tenant } from "@/lib/data/tenant";
+import { useTenant } from "@/components/tenant-provider";
 import { UserMenu } from "@/components/user-menu";
 import { cn } from "@/lib/utils";
 
 export function Header({ adminLink: _adminLink = false }: { adminLink?: boolean }) {
+  const tenant = useTenant();
   const waLink = `https://wa.me/${tenant.whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
     "Hola, quería consultar disponibilidad y precios.",
   )}`;
@@ -27,7 +28,7 @@ export function Header({ adminLink: _adminLink = false }: { adminLink?: boolean 
               {tenant.name}
             </span>
             <span className="text-[10.5px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Mayorista · Mercabarna
+              {tenant.tagline}
             </span>
           </div>
         </Link>

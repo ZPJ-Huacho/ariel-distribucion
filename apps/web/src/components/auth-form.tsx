@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { tenant } from "@/lib/data/tenant";
+import { useTenant } from "@/components/tenant-provider";
 import { createBrowserApiClient } from "@/lib/api";
 import { useAuth } from "@/lib/auth-store";
 import { useOrders } from "@/lib/orders-store";
@@ -31,6 +31,7 @@ export function AuthForm({ initialMode = "login" }: { initialMode?: Mode }) {
   const params = useSearchParams();
   const redirect = params.get("redirect") ?? "/";
   const [mode, setMode] = useState<Mode>(initialMode);
+  const tenant = useTenant();
 
   const login = useAuth((s) => s.login);
   const setCustomer = useOrders((s) => s.setCustomer);

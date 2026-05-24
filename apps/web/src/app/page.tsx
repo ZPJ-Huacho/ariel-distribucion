@@ -16,7 +16,7 @@ async function loadCatalog(): Promise<{
   categories: CategoryDef[];
 }> {
   try {
-    const client = createServerApiClient();
+    const client = await createServerApiClient();
     const [products, categories] = await Promise.all([
       client.products.list(),
       client.categories.list(),

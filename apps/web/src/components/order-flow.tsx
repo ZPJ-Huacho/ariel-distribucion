@@ -27,7 +27,7 @@ import { useCart, cartTotal } from "@/lib/cart-store";
 import { useOrders } from "@/lib/orders-store";
 import { CartLine } from "@/components/cart-line";
 import { formatPrice } from "@/lib/format";
-import { tenant } from "@/lib/data/tenant";
+import { useTenant } from "@/components/tenant-provider";
 import { getCurrentSource } from "@/lib/source-tracking";
 import { buildOrderMessage, buildWhatsAppLink } from "@/lib/whatsapp";
 import type { DemoOrder } from "@mercabana/core";
@@ -59,6 +59,7 @@ function generateOrderId(): string {
 }
 
 export function OrderFlow() {
+  const tenant = useTenant();
   const items = useCart((s) => s.items);
   const clearCart = useCart((s) => s.clear);
   const total = cartTotal(items);

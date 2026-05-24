@@ -33,7 +33,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { tenant } from "@/lib/data/tenant";
+import { useTenant } from "@/components/tenant-provider";
 import { createBrowserApiClient } from "@/lib/api";
 import { useAuth } from "@/lib/auth-store";
 import { useToast } from "@/lib/toast-store";
@@ -51,6 +51,7 @@ const tabs: Tab[] = [
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const tenant = useTenant();
   const user = useAuth((s) => s.user);
   const hydrated = useAuth((s) => s.hydrated);
   const logout = useAuth((s) => s.logout);
@@ -93,7 +94,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-muted/30">
       {/* Sidebar desktop */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-card md:flex">
-        <SidebarBrand />
+        <SidebarBrand tenantName={tenant.name} />
         <SidebarNav pathname={pathname} onNavigate={() => {}} />
         <SidebarFooter user={user} onLogout={handleLogout} />
       </aside>
@@ -110,7 +111,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <SheetTitle>Navegación admin</SheetTitle>
               </SheetHeader>
               <div className="flex h-full flex-col">
-                <SidebarBrand />
+                <SidebarBrand tenantName={tenant.name} />
                 <SidebarNav pathname={pathname} onNavigate={() => setMobileOpen(false)} />
                 <SidebarFooter user={user} onLogout={handleLogout} />
               </div>
@@ -175,7 +176,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SidebarBrand() {
+function SidebarBrand({ tenantName }: { tenantName: string }) {
   return (
     <Link
       href="/admin"
@@ -186,7 +187,7 @@ function SidebarBrand() {
       </span>
       <div className="flex min-w-0 flex-col leading-tight">
         <span className="truncate text-[14px] font-semibold tracking-tight text-foreground">
-          {tenant.name}
+          {tenantName}
         </span>
         <span className="text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
           Panel admin

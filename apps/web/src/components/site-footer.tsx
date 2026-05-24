@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { MessageCircle, MapPin, Mail, Clock, Sprout } from "lucide-react";
-import { tenant } from "@/lib/data/tenant";
+import { useTenant } from "@/components/tenant-provider";
 
 export function SiteFooter() {
+  const tenant = useTenant();
   const waLink = `https://wa.me/${tenant.whatsappNumber.replace(/[^0-9]/g, "")}`;
 
   return (

@@ -1,5 +1,7 @@
--- Local seed: Mercabana / Frutas del Mercat (subdomain: frutas)
--- Apply via: wrangler d1 execute mercabana --local --file=../../packages/db/seed/local-seed.sql
+-- Local seed: 2 tenants Mercabana — frutas + marisco — para validar
+-- multi-tenancy por subdominio (frutas.localhost:3000 y
+-- marisco.localhost:3000).
+-- Apply: wrangler d1 execute mercabana --local --file=../../packages/db/seed/local-seed.sql
 
 DELETE FROM orders;
 DELETE FROM products;
@@ -8,11 +10,15 @@ DELETE FROM users;
 DELETE FROM tenants;
 
 INSERT INTO tenants (id, slug, name, tagline, whatsapp_number, address, delivery_hours, primary_color, primary_color_dark, emoji) VALUES
-  ('ten_frutas', 'frutas', 'Frutas del Mercat', 'Mayorista de fruta y verdura · Mercabarna', '+34681873504', 'Mercabarna, Barcelona', 'Lunes a sábado · 8:00 — 14:00', '#2d5128', '#1f3b1c', '🍊');
+  ('ten_frutas',  'frutas',  'Frutas del Mercat',  'Mayorista de fruta y verdura · Mercabarna', '+34681873504', 'Mercabarna, Barcelona', 'Lunes a sábado · 8:00 — 14:00', '#2d5128', '#1f3b1c', '🍊'),
+  ('ten_marisco', 'marisco', 'Marisco del Puerto', 'Pesca fresca de subasta · Mercabarna',      '+34681873505', 'Mercabarna, Barcelona', 'Martes a sábado · 6:00 — 12:00', '#1d4358', '#102835', '🦐');
 
--- Demo admin: admin@frutas.com / admin123 (bcrypt cost 10)
+-- Demo admins:
+--   admin@frutas.com  / admin123
+--   admin@marisco.com / marisco123
 INSERT INTO users (id, tenant_id, email, password_hash, name, phone, role) VALUES
-  ('usr_admin_demo', 'ten_frutas', 'admin@frutas.com', '$2b$10$0s4OHXxted66ulzKb2PRze/5uFgvXtpeIRUgKaMwW01rCgmb3R8re', 'Admin Mercabana', '+34681873504', 'admin');
+  ('usr_admin_frutas',  'ten_frutas',  'admin@frutas.com',  '$2b$10$0s4OHXxted66ulzKb2PRze/5uFgvXtpeIRUgKaMwW01rCgmb3R8re', 'Admin Frutas',  '+34681873504', 'admin'),
+  ('usr_admin_marisco', 'ten_marisco', 'admin@marisco.com', '$2b$10$dGVvG4vDOdsiSztk2j.DTeiE6DYV/ac.7e5jkiJXfo2GxGqWAMB9W', 'Admin Marisco', '+34681873505', 'admin');
 
 INSERT INTO categories (id, tenant_id, slug, title, lead, icon, sort_order, active) VALUES
   ('cat_frutas',   'ten_frutas', 'frutas',   'Frutas de temporada', 'Recogidas en lonja a primera hora', '🍎', 1, 1),
@@ -40,3 +46,21 @@ INSERT INTO products (id, tenant_id, category_id, name, description, price, unit
   ('p_pimiento-rojo',     'ten_frutas', 'cat_verduras', 'Pimiento rojo',            'Carnosos y dulces. Para asar o ensalada.',         14, 'caja 3 kg',   '🫑', 'from-red-400 to-orange-600',    1, 0, 18),
   ('p_lechugas',          'ten_frutas', 'cat_verduras', 'Lechuga romana',           'Crujiente, fresca, recién cogida.',                8,  '6 unidades',  '🥬', 'from-lime-300 to-emerald-500',  1, 0, 19),
   ('p_calabacines',       'ten_frutas', 'cat_verduras', 'Calabacines',              'Pequeños, tiernos, perfectos para crema y plancha.', 9,'caja 3 kg',  '🥒', 'from-emerald-300 to-green-600', 1, 0, 20);
+
+-- Catálogo del tenant marisco
+INSERT INTO categories (id, tenant_id, slug, title, lead, icon, sort_order, active) VALUES
+  ('cat_pescado',  'ten_marisco', 'pescado',  'Pescado fresco',  'Subasta diaria del puerto',          '🐟', 1, 1),
+  ('cat_marisco',  'ten_marisco', 'marisco',  'Marisco',         'Crustáceos y moluscos del día',      '🦐', 2, 1),
+  ('cat_congelado','ten_marisco', 'congelado','Congelado',       'Pesca seleccionada y ultracongelada','❄️', 3, 1);
+
+INSERT INTO products (id, tenant_id, category_id, name, description, price, unit, emoji, gradient, available, highlighted, sort_order) VALUES
+  ('pm_merluza',    'ten_marisco', 'cat_pescado',  'Merluza del Cantábrico', 'Pescada en cebo, piezas de 1-2 kg.',        22, 'kg',          '🐟', '', 1, 1, 1),
+  ('pm_lubina',     'ten_marisco', 'cat_pescado',  'Lubina salvaje',         'Capturada al cerco, sabor intenso.',        28, 'kg',          '🐟', '', 1, 0, 2),
+  ('pm_dorada',     'ten_marisco', 'cat_pescado',  'Dorada de costa',        'Tamaño ración, ideal a la sal.',            18, 'kg',          '🐟', '', 1, 0, 3),
+  ('pm_atun',       'ten_marisco', 'cat_pescado',  'Atún rojo',              'Tronco fresco para tartar o plancha.',      45, 'kg',          '🐟', '', 0, 1, 4),
+  ('pm_gambas',     'ten_marisco', 'cat_marisco',  'Gamba blanca',           'Talla 30-40 piezas/kg, sabor dulce.',       35, 'caja 2 kg',   '🦐', '', 1, 1, 5),
+  ('pm_langostinos','ten_marisco', 'cat_marisco',  'Langostinos cocidos',    'Cocidos a bordo, listos para servir.',      32, 'caja 1 kg',   '🦐', '', 1, 0, 6),
+  ('pm_mejillones', 'ten_marisco', 'cat_marisco',  'Mejillones de roca',     'Limpios, en saco de 3 kg.',                 9,  'saco 3 kg',   '🦪', '', 1, 0, 7),
+  ('pm_almejas',    'ten_marisco', 'cat_marisco',  'Almejas finas',          'Para guiso o a la marinera.',               24, 'kg',          '🦪', '', 1, 0, 8),
+  ('pm_pulpo',      'ten_marisco', 'cat_congelado','Pulpo cocido',           'Cocido y ultracongelado, listo para usar.', 19, 'pieza ~1 kg', '🐙', '', 1, 0, 9),
+  ('pm_calamar',    'ten_marisco', 'cat_congelado','Calamar limpio',         'Anillas limpias en caja.',                  16, 'caja 2 kg',   '🦑', '', 1, 0, 10);
