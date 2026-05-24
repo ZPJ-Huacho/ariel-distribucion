@@ -9,6 +9,7 @@ import { createBrowserApiClient } from "@/lib/api";
 import { useAuth } from "@/lib/auth-store";
 import { useOrders } from "@/lib/orders-store";
 import { useToast } from "@/lib/toast-store";
+import { PasswordInput } from "@/components/password-input";
 
 type Mode = "login" | "register";
 
@@ -160,8 +161,7 @@ export function AuthForm({ initialMode = "login" }: { initialMode?: Mode }) {
         </Field>
 
         <Field label="Contraseña" error={errors.password}>
-          <input
-            type="password"
+          <PasswordInput
             autoComplete={mode === "login" ? "current-password" : "new-password"}
             value={values.password}
             onChange={(e) => update("password", e.target.value)}

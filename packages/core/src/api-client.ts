@@ -157,6 +157,16 @@ export function createApiClient(opts: ApiClientOptions) {
         }),
       logout: () => request<{ ok: true }>("/api/auth/logout", { method: "POST" }),
       me: () => request<{ user: AuthUser | null }>("/api/auth/me"),
+      updateProfile: (input: {
+        name?: string;
+        phone?: string;
+        currentPassword?: string;
+        newPassword?: string;
+      }) =>
+        request<{ user: AuthUser }>("/api/auth/me", {
+          method: "PATCH",
+          body: JSON.stringify(input),
+        }),
     },
   };
 }

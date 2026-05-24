@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { nanoid } from "nanoid";
 import { users } from "@mercabana/db";
 import { createDb } from "@mercabana/db/client";
-import { loginSchema, registerSchema } from "@mercabana/core";
+import { loginSchema, registerSchema, updateProfileSchema } from "@mercabana/core";
 import type { AuthUser } from "@mercabana/core";
 import type { AppEnv } from "../env";
 import { hashPassword, verifyPassword } from "../lib/password";
@@ -113,4 +113,28 @@ export const authRoutes = new Hono<AppEnv>()
   .get("/me", (c) => {
     const user = c.get("user");
     return c.json({ user: user ? toAuthUser(user) : null });
+  })
+  .patch("/me", zValidator("json", updateProfileSchema), async (c) => {
+    const user = c.get("user");
+    if (!user) return c.json({ error: "unauthorized" }, 401);
+    const input = c.req.valid("json");
+    const db = createDb(c.env.DB);
+
+    const patch: Record<string, unknown> = {};
+    if (input.name !== undefined) patch.name = input.name;
+    if (input.phone !== undefined) patch.phone = input.phone;
+
+    if (input.newPassword) {
+      const ok = await verifyPassword(input.currentPassword ?? "", user.passwordHash);
+      if (!ok) return c.json({ error: "invalid_current_password" }, 401);
+      patch.passwordHash = await hashPassword(input.newPassword);
+    }
+
+    if (Object.keys(patch).length === 0) {
+      return c.json({ user: toAuthUser(user) });
+    }
+
+    await db.update(users).set(patch).where(eq(users.id, user.id)).run();
+    const updated = await db.select().from(users).where(eq(users.id, user.id)).get();
+    return c.json({ user: updated ? toAuthUser(updated) : toAuthUser(user) });
   });

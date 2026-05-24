@@ -2,11 +2,9 @@
 
 import Link from "next/link";
 import { tenant } from "@/lib/data/tenant";
-import { useAuth } from "@/lib/auth-store";
+import { UserMenu } from "@/components/user-menu";
 
 export function Header({ adminLink: _adminLink = false }: { adminLink?: boolean }) {
-  const user = useAuth((s) => s.user);
-  const hydrated = useAuth((s) => s.hydrated);
   const waLink = `https://wa.me/${tenant.whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
     "Hola, quería consultar disponibilidad y precios.",
   )}`;
@@ -31,27 +29,7 @@ export function Header({ adminLink: _adminLink = false }: { adminLink?: boolean 
           </div>
         </Link>
         <div className="flex items-center gap-1.5">
-          {hydrated && user?.role === "admin" && (
-            <Link
-              href="/admin"
-              className="hidden items-center gap-1 rounded-md border border-brand-700 bg-brand-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-brand-800 hover:bg-brand-100 sm:flex"
-            >
-              Panel
-            </Link>
-          )}
-          {hydrated && !user && (
-            <Link
-              href="/login"
-              className="hidden rounded-md border border-[var(--color-line)] px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-ink-soft)] hover:bg-[var(--color-canvas-soft)] sm:block"
-            >
-              Acceder
-            </Link>
-          )}
-          {hydrated && user && user.role !== "admin" && (
-            <span className="hidden items-center gap-1 rounded-md border border-[var(--color-line)] bg-white px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-ink-soft)] sm:flex">
-              {user.name.split(" ")[0]}
-            </span>
-          )}
+          <UserMenu />
           <a
             href={waLink}
             target="_blank"
