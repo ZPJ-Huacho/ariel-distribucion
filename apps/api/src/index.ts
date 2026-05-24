@@ -20,6 +20,8 @@ app.use(
       return null;
     },
     credentials: true,
+    allowHeaders: ["content-type", "x-tenant-slug"],
+    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   }),
 );
 

@@ -1,13 +1,20 @@
 import { createApiClient, type ApiClient } from "@mercabana/core";
 
 const DEFAULT_DEV_BASE = "http://localhost:8788";
+const DEFAULT_TENANT = "frutas";
 
 /**
  * Browser client. Cookies are sent automatically by the browser when
  * `credentials: 'include'` is set (the client does this).
+ *
+ * En dev sobre localhost:3000 no hay subdominio que el Worker pueda
+ * leer del Host, así que mandamos x-tenant-slug explícito. En Fase 8,
+ * cuando el front escuche en *.mercabana.com (o *.localhost para dev),
+ * podremos leerlo de window.location.host.
  */
 export function createBrowserApiClient(): ApiClient {
   return createApiClient({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_DEV_BASE,
+    tenantSlug: process.env.NEXT_PUBLIC_DEFAULT_TENANT ?? DEFAULT_TENANT,
   });
 }
