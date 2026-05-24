@@ -4,6 +4,7 @@ export type AppEnv = {
   Bindings: {
     DB: D1Database;
     SESSIONS: KVNamespace;
+    IMAGES: R2Bucket;
   };
   Variables: {
     tenant: Tenant;

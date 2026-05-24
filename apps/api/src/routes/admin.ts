@@ -12,6 +12,13 @@ import {
 } from "@mercabana/core";
 import type { AppEnv } from "../env";
 
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024; // 2 MB (post-compression desde el cliente).
+
 const idParam = z.object({ id: z.string().min(1) });
 
 async function categoryIdBySlug(
@@ -173,6 +180,31 @@ export const adminRoutes = new Hono<AppEnv>()
       .orderBy(desc(orders.createdAt));
     return c.json(rows);
   })
+  // uploads → R2
+  .post("/uploads", async (c) => {
+    const form = await c.req.parseBody();
+    const file = form["file"];
+    if (!(file instanceof File)) return c.json({ error: "no_file" }, 400);
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+      return c.json({ error: "invalid_type", type: file.type }, 415);
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return c.json({ error: "file_too_large", max: MAX_UPLOAD_BYTES }, 413);
+    }
+    const tenant = c.get("tenant");
+    const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+    const key = `tenants/${tenant.slug}/products/${nanoid(14)}.${ext}`;
+    await c.env.IMAGES.put(key, file.stream(), {
+      httpMetadata: { contentType: file.type },
+      customMetadata: {
+        tenantSlug: tenant.slug,
+        uploadedAt: new Date().toISOString(),
+      },
+    });
+    const origin = new URL(c.req.url).origin;
+    return c.json({ key, url: `${origin}/r2/${key}` });
+  })
+
   .patch(
     "/orders/:id/status",
     zValidator("param", idParam),

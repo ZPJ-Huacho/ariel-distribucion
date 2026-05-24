@@ -20,5 +20,11 @@
       "binding": "SESSIONS",
       "id": "REPLACE_AFTER_WRANGLER_KV_CREATE"
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "mercabana-images"
+    }
   ]
 }

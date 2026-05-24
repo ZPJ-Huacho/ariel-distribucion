@@ -60,7 +60,14 @@ const defaultValues: FormValues = {
 const MAX_DIMENSION = 720;
 const JPEG_QUALITY = 0.75;
 
-async function compressImage(file: File): Promise<string> {
+function extractR2Key(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  const idx = url.indexOf("/r2/");
+  if (idx >= 0) return url.slice(idx + 4);
+  return url; // data URL legacy o externo absoluto — se manda tal cual
+}
+
+async function compressImageToBlob(file: File): Promise<Blob> {
   const objectUrl = URL.createObjectURL(file);
   try {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -80,7 +87,11 @@ async function compressImage(file: File): Promise<string> {
     ctx.fillStyle = "#f6f1e7";
     ctx.fillRect(0, 0, width, height);
     ctx.drawImage(img, 0, 0, width, height);
-    return canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY),
+    );
+    if (!blob) throw new Error("No se pudo generar el JPEG");
+    return blob;
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
@@ -146,10 +157,14 @@ export function ProductEditor({
     if (!file) return;
     setUploading(true);
     try {
-      const dataUrl = await compressImage(file);
-      update("imageUrl", dataUrl);
+      const compressed = await compressImageToBlob(file);
+      const form = new FormData();
+      form.append("file", compressed, "product.jpg");
+      const { url } = await createBrowserApiClient().admin.uploads.create(form);
+      update("imageUrl", url);
     } catch (err) {
-      showToast("No se pudo procesar la imagen");
+      const msg = err instanceof ApiError ? `Error ${err.status}` : "Error inesperado";
+      showToast(`No se pudo subir la imagen (${msg})`);
       console.error(err);
     } finally {
       setUploading(false);
@@ -184,7 +199,10 @@ export function ProductEditor({
       gradient: "",
       isAvailable: data.isAvailable,
       isHighlighted: data.isHighlighted,
-      imageR2Key: data.imageUrl ?? null,
+      // El backend almacena la key R2 (no la URL absoluta). Si data.imageUrl
+      // viene de /r2/<key>, extraemos la key; data URLs legacy se envían
+      // tal cual.
+      imageR2Key: extractR2Key(data.imageUrl) ?? null,
     };
     try {
       if (mode.type === "new") {

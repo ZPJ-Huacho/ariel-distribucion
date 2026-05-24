@@ -72,7 +72,13 @@ export function createApiClient(opts: ApiClientOptions) {
     const headers = new Headers(opts.headers);
     if (opts.tenantSlug) headers.set("x-tenant-slug", opts.tenantSlug);
     if (init.headers) new Headers(init.headers).forEach((v, k) => headers.set(k, v));
-    if (init.body && !headers.has("content-type")) {
+    // Solo JSON por defecto; si el body es FormData/Blob, dejar que el
+    // navegador ponga el content-type con el boundary correcto.
+    if (
+      init.body &&
+      !headers.has("content-type") &&
+      typeof init.body === "string"
+    ) {
       headers.set("content-type", "application/json");
     }
     const res = await fetchImpl(`${opts.baseUrl}${path}`, {
@@ -141,6 +147,16 @@ export function createApiClient(opts: ApiClientOptions) {
           request<{ ok: true }>(`/api/admin/orders/${id}/status`, {
             method: "PATCH",
             body: JSON.stringify({ status }),
+          }),
+      },
+      uploads: {
+        // Multipart FormData: el browser pone el boundary automáticamente;
+        // el cliente request() envía body tal cual y NO setea
+        // content-type cuando el body es FormData.
+        create: (form: FormData) =>
+          request<{ key: string; url: string }>("/api/admin/uploads", {
+            method: "POST",
+            body: form,
           }),
       },
     },

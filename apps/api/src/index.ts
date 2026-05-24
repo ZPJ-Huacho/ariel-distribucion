@@ -27,6 +27,22 @@ app.use(
 
 app.get("/", (c) => c.text("mercabana-api"));
 
+// Servir archivos de R2 al público (imágenes de productos).
+app.get("/r2/*", async (c) => {
+  const key = decodeURIComponent(c.req.path.replace(/^\/r2\//, ""));
+  if (!key) return c.notFound();
+  const obj = await c.env.IMAGES.get(key);
+  if (!obj) return c.notFound();
+  const headers = new Headers();
+  headers.set(
+    "content-type",
+    obj.httpMetadata?.contentType ?? "application/octet-stream",
+  );
+  headers.set("cache-control", "public, max-age=31536000, immutable");
+  if (obj.httpEtag) headers.set("etag", obj.httpEtag);
+  return new Response(obj.body, { headers });
+});
+
 app.use("/api/*", resolveTenant);
 app.use("/api/*", resolveSession);
 

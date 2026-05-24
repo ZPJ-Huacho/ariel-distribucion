@@ -5,14 +5,14 @@ import { createDb } from "@mercabana/db/client";
 import type { CategoryDef, Product, Tenant } from "@mercabana/core";
 import type { AppEnv } from "../env";
 
-// Hasta la Fase 9 (R2), el editor admin guarda la imagen como data URL
-// directamente en image_r2_key. Cuando migremos a R2 real, este campo
-// pasará a contener una key tipo "tenants/frutas/products/uuid.jpg"
-// y este helper construirá /r2/<key>.
-function imageKeyToUrl(key: string | null): string | undefined {
+// image_r2_key puede contener:
+// - una R2 key tipo "tenants/frutas/products/abc123.jpg" (post-Fase 9)
+// - un data URL legacy de los productos creados antes (queda como está)
+// - un http(s) absoluto si el admin pegó una URL externa
+function imageKeyToUrl(key: string | null, origin: string): string | undefined {
   if (!key) return undefined;
   if (key.startsWith("data:") || key.startsWith("http")) return key;
-  return `/r2/${key}`;
+  return `${origin}/r2/${key}`;
 }
 
 export const publicRoutes = new Hono<AppEnv>()
@@ -79,6 +79,7 @@ export const publicRoutes = new Hono<AppEnv>()
       .where(where)
       .orderBy(asc(products.sortOrder));
 
+    const origin = new URL(c.req.url).origin;
     const wire: Product[] = rows.map((r) => ({
       id: r.id,
       name: r.name,
@@ -91,7 +92,7 @@ export const publicRoutes = new Hono<AppEnv>()
       isAvailable: r.isAvailable,
       isHighlighted: r.isHighlighted,
       sortOrder: r.sortOrder,
-      imageUrl: imageKeyToUrl(r.imageR2Key),
+      imageUrl: imageKeyToUrl(r.imageR2Key, origin),
     }));
     return c.json(wire);
   });
