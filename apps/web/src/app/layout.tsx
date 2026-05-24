@@ -1,21 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Mulish, Playfair_Display } from "next/font/google";
+import { Geist, Playfair_Display } from "next/font/google";
 import { tenant } from "@/lib/data/tenant";
-import { Toast } from "@/components/toast";
+import { Toaster } from "@/components/ui/sonner";
 import { StorageSync } from "@/components/storage-sync";
 import { AuthSync } from "@/components/auth-sync";
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
-const mulish = Mulish({
-  variable: "--font-app",
+const geist = Geist({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-sans",
 });
 
 const playfair = Playfair_Display({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: tenant.primaryColor,
+  themeColor: "#294f1f",
   width: "device-width",
   initialScale: 1,
 };
@@ -44,13 +44,13 @@ export default function RootLayout({
     <html
       lang="es"
       data-scroll-behavior="smooth"
-      className={`${mulish.variable} ${playfair.variable} h-full`}
+      className={cn("h-full", geist.variable, playfair.variable)}
     >
-      <body className="min-h-full flex flex-col bg-[var(--color-canvas)] text-[var(--color-ink)]">
+      <body className="min-h-full flex flex-col font-sans">
         <AuthSync />
         <StorageSync />
         {children}
-        <Toast />
+        <Toaster richColors closeButton />
       </body>
     </html>
   );

@@ -1,22 +1,19 @@
-import { create } from "zustand";
+import { toast } from "sonner";
 
-type ToastState = {
-  message: string | null;
+type ToastApi = {
   show: (message: string) => void;
   clear: () => void;
 };
 
-let timer: ReturnType<typeof setTimeout> | null = null;
-
-export const useToast = create<ToastState>((set) => ({
-  message: null,
+const api: ToastApi = {
   show: (message) => {
-    set({ message });
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(() => set({ message: null }), 1800);
+    toast(message);
   },
   clear: () => {
-    if (timer) clearTimeout(timer);
-    set({ message: null });
+    toast.dismiss();
   },
-}));
+};
+
+export function useToast<T>(selector: (state: ToastApi) => T): T {
+  return selector(api);
+}
