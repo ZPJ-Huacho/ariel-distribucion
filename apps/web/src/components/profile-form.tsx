@@ -4,6 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, updateProfileSchema } from "@mercabana/core";
 import type { AuthUser } from "@mercabana/core";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { createBrowserApiClient } from "@/lib/api";
 import { useAuth } from "@/lib/auth-store";
 import { useToast } from "@/lib/toast-store";
@@ -76,79 +87,80 @@ export function ProfileForm({ user }: { user: AuthUser }) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      noValidate
-      className="space-y-4 rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-5"
-    >
-      <Field label="Email" hint="No se puede cambiar">
-        <input
-          type="email"
-          value={user.email}
-          disabled
-          className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-canvas-soft)] px-3.5 py-3 text-sm text-[var(--color-ink-mute)]"
-        />
-      </Field>
+    <Card>
+      <CardHeader>
+        <CardTitle>Datos de cuenta</CardTitle>
+        <CardDescription>Edita tu nombre, teléfono o contraseña.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          <Field label="Email" hint="No se puede cambiar" id="email">
+            <Input id="email" type="email" value={user.email} disabled />
+          </Field>
 
-      <Field label="Nombre" error={errors.name}>
-        <input
-          type="text"
-          autoComplete="name"
-          value={values.name}
-          onChange={(e) => update("name", e.target.value)}
-          className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-3 text-sm focus:border-brand-700 focus:outline-none"
-        />
-      </Field>
+          <Field label="Nombre" error={errors.name} id="name">
+            <Input
+              id="name"
+              type="text"
+              autoComplete="name"
+              value={values.name}
+              onChange={(e) => update("name", e.target.value)}
+            />
+          </Field>
 
-      <Field label="Teléfono" error={errors.phone}>
-        <input
-          type="tel"
-          autoComplete="tel"
-          value={values.phone}
-          onChange={(e) => update("phone", e.target.value)}
-          placeholder="612 33 44 55"
-          className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-3 text-sm focus:border-brand-700 focus:outline-none"
-        />
-      </Field>
+          <Field label="Teléfono" error={errors.phone} id="phone">
+            <Input
+              id="phone"
+              type="tel"
+              autoComplete="tel"
+              value={values.phone}
+              onChange={(e) => update("phone", e.target.value)}
+              placeholder="612 33 44 55"
+            />
+          </Field>
 
-      <fieldset className="space-y-3 border-t border-[var(--color-line)] pt-4">
-        <legend className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-soft)]">
-          Cambiar contraseña
-        </legend>
-        <Field label="Contraseña actual" error={errors.currentPassword}>
-          <PasswordInput
-            autoComplete="current-password"
-            value={values.currentPassword}
-            onChange={(e) => update("currentPassword", e.target.value)}
-            placeholder="••••••••"
-            className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-3 text-sm focus:border-brand-700 focus:outline-none"
-          />
-        </Field>
-        <Field label="Nueva contraseña" error={errors.newPassword} hint="Déjalo en blanco si no quieres cambiarla">
-          <PasswordInput
-            autoComplete="new-password"
-            value={values.newPassword}
-            onChange={(e) => update("newPassword", e.target.value)}
-            placeholder="••••••••"
-            className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-3 text-sm focus:border-brand-700 focus:outline-none"
-          />
-        </Field>
-      </fieldset>
+          <Separator className="my-2" />
 
-      {serverError && (
-        <div className="rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-800">
-          {serverError}
-        </div>
-      )}
+          <div className="space-y-1.5">
+            <h3 className="text-[12px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              Cambiar contraseña
+            </h3>
+            <p className="text-[12px] text-muted-foreground">
+              Déjalo en blanco si no quieres cambiarla.
+            </p>
+          </div>
 
-      <button
-        type="submit"
-        disabled={saving}
-        className="w-full rounded-md border border-brand-900 bg-brand-800 py-3 text-[12px] font-semibold uppercase tracking-[0.16em] text-accent-100 transition hover:bg-brand-900 disabled:opacity-60"
-      >
-        {saving ? "Guardando…" : "Guardar cambios"}
-      </button>
-    </form>
+          <Field label="Contraseña actual" error={errors.currentPassword} id="currentPassword">
+            <PasswordInput
+              id="currentPassword"
+              autoComplete="current-password"
+              value={values.currentPassword}
+              onChange={(e) => update("currentPassword", e.target.value)}
+              placeholder="••••••••"
+            />
+          </Field>
+          <Field label="Nueva contraseña" error={errors.newPassword} id="newPassword">
+            <PasswordInput
+              id="newPassword"
+              autoComplete="new-password"
+              value={values.newPassword}
+              onChange={(e) => update("newPassword", e.target.value)}
+              placeholder="••••••••"
+            />
+          </Field>
+
+          {serverError && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-[12.5px] font-medium text-destructive">
+              {serverError}
+            </div>
+          )}
+
+          <Button type="submit" disabled={saving} className="w-full">
+            {saving ? "Guardando…" : "Guardar cambios"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -156,25 +168,23 @@ function Field({
   label,
   hint,
   error,
+  id,
   children,
 }: {
   label: string;
   hint?: string;
   error?: string;
+  id: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-soft)]">
-        {label}
-      </span>
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
       {children}
       {hint && !error && (
-        <span className="mt-1 block text-[11px] text-[var(--color-ink-mute)]">{hint}</span>
+        <p className="text-[11.5px] text-muted-foreground">{hint}</p>
       )}
-      {error && (
-        <span className="mt-1 block text-[11px] font-medium text-rose-700">{error}</span>
-      )}
-    </label>
+      {error && <p className="text-[11.5px] font-medium text-destructive">{error}</p>}
+    </div>
   );
 }

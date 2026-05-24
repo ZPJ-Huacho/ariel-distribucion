@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight, RotateCcw } from "lucide-react";
 import { useOrders } from "@/lib/orders-store";
 import { useCart } from "@/lib/cart-store";
 import { useToast } from "@/lib/toast-store";
@@ -42,47 +43,31 @@ export function RepeatLastOrder() {
     <button
       type="button"
       onClick={repeat}
-      className="group flex w-full items-center gap-3 rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] p-3.5 text-left transition hover:border-brand-700 active:scale-[0.997]"
+      className="group mb-4 flex w-full items-center gap-3 rounded-2xl border border-border bg-gradient-to-br from-accent/50 to-card p-4 text-left transition hover:border-primary/30 hover:shadow-sm active:scale-[0.997]"
     >
       <span
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-brand-700 bg-brand-800 text-accent-100"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm"
         aria-hidden
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 12a9 9 0 1 1-3.4-7" />
-          <polyline points="21 4 21 11 14 11" />
-        </svg>
+        <RotateCcw className="h-5 w-5" />
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-700">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-primary">
             Pedido recurrente
           </span>
-          <span className="shrink-0 font-display text-sm font-semibold tabular-nums text-[var(--color-ink)]">
+          <span className="shrink-0 text-[14px] font-semibold tabular-nums text-foreground">
             {formatPrice(last.total)}
           </span>
         </div>
-        <div className="mt-0.5 font-display text-[15px] text-[var(--color-ink)]">
+        <div className="mt-0.5 text-[14.5px] font-semibold text-foreground">
           Repetir último pedido de {firstName}
         </div>
-        <p className="mt-0.5 truncate text-[11px] text-[var(--color-ink-mute)]">
+        <p className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
           {last.items.map((i) => `${i.quantity}× ${i.name}`).join(" · ")}
         </p>
       </div>
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="shrink-0 text-[var(--color-ink-mute)] transition group-hover:translate-x-0.5 group-hover:text-brand-700"
-        aria-hidden
-      >
-        <polyline points="9 18 15 12 9 6" />
-      </svg>
+      <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
     </button>
   );
 }

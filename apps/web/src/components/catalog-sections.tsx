@@ -1,6 +1,7 @@
 "use client";
 
 import { ProductCard } from "@/components/product-card";
+import { Badge } from "@/components/ui/badge";
 import type { CategoryDef, Product } from "@mercabana/core";
 
 function productsByCategory(products: Product[]): Record<string, Product[]> {
@@ -30,13 +31,13 @@ export function CatalogSections({
     const list = grouped[activeCategory] ?? [];
     if (list.length === 0) {
       return (
-        <section className="mt-6">
+        <section className="mt-8">
           <EmptyState />
         </section>
       );
     }
     return (
-      <section className="mt-6">
+      <section className="mt-8">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {list.map((p) => (
             <ProductCard key={p.id} product={p} />
@@ -47,7 +48,7 @@ export function CatalogSections({
   }
 
   return (
-    <div className="mt-6 space-y-10">
+    <div className="mt-8 space-y-12">
       {sortedCategories.map((def) => {
         const list = grouped[def.slug] ?? [];
         if (list.length === 0) return null;
@@ -68,34 +69,36 @@ export function CatalogSections({
 
 function SectionHeader({ def, count }: { def: CategoryDef; count: number }) {
   return (
-    <header className="mb-4 flex items-end justify-between gap-3 border-b border-[var(--color-line)] pb-2">
-      <div className="flex items-start gap-3">
+    <header className="mb-5 flex items-end justify-between gap-3">
+      <div className="flex items-center gap-3">
         <span
-          className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-[var(--color-line)] bg-[var(--color-canvas-soft)] text-xl sm:flex"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-2xl"
           aria-hidden
         >
           {def.icon}
         </span>
         <div>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-700">
-            {def.slug}
-          </span>
-          <h2 className="mt-1 font-display text-[20px] leading-tight text-[var(--color-ink)] sm:text-[22px]">
+          <h2 className="text-[20px] font-semibold leading-tight tracking-tight text-foreground sm:text-[22px]">
             {def.title}
           </h2>
-          <p className="text-[12px] text-[var(--color-ink-soft)]">{def.lead}</p>
+          {def.lead && (
+            <p className="text-[12.5px] text-muted-foreground">{def.lead}</p>
+          )}
         </div>
       </div>
-      <span className="shrink-0 rounded-sm border border-[var(--color-line)] bg-[var(--color-canvas-soft)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-soft)]">
+      <Badge
+        variant="secondary"
+        className="shrink-0 rounded-full text-[10.5px] font-medium"
+      >
         {count} producto{count === 1 ? "" : "s"}
-      </span>
+      </Badge>
     </header>
   );
 }
 
 function EmptyState() {
   return (
-    <div className="rounded-md border border-dashed border-[var(--color-line)] bg-[var(--color-surface)] p-10 text-center text-sm text-[var(--color-ink-mute)]">
+    <div className="rounded-xl border border-dashed border-border bg-card p-16 text-center text-sm text-muted-foreground">
       No hay producto en esta categoría hoy.
     </div>
   );

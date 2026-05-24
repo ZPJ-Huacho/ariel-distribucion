@@ -1,3 +1,4 @@
+import { Sparkles } from "lucide-react";
 import { Header } from "@/components/header";
 import { CategoryTabs } from "@/components/category-tabs";
 import { CatalogSections } from "@/components/catalog-sections";
@@ -10,7 +11,10 @@ import { products as fallbackProducts } from "@/lib/data/products";
 import { categories as fallbackCategories } from "@/lib/data/categories";
 import type { CategoryDef, Product } from "@mercabana/core";
 
-async function loadCatalog(): Promise<{ products: Product[]; categories: CategoryDef[] }> {
+async function loadCatalog(): Promise<{
+  products: Product[];
+  categories: CategoryDef[];
+}> {
   try {
     const client = createServerApiClient();
     const [products, categories] = await Promise.all([
@@ -36,25 +40,24 @@ export default async function Home({
   return (
     <>
       <SourceCapture />
-      <Header adminLink />
+      <Header />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-32 lg:px-6">
-        <section className="border-b border-[var(--color-line)] pt-10 pb-7">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-700">
-            Catálogo mayorista · hoy
-          </span>
-          <h1 className="mt-3 font-display text-[32px] leading-[1.05] text-[var(--color-ink)] sm:text-[40px] lg:text-[48px]">
-            Producto de Mercabarna,<br />
-            directo a tu negocio.
+        <section className="pt-14 pb-10">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium text-muted-foreground">
+            <Sparkles className="h-3 w-3 text-primary" />
+            Frescos de hoy · Mercabarna
+          </div>
+          <h1 className="mt-5 max-w-3xl text-[34px] font-semibold leading-[1.05] tracking-tight text-foreground sm:text-[44px] lg:text-[54px]">
+            Producto de lonja,{" "}
+            <span className="text-primary">directo a tu negocio.</span>
           </h1>
-          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-[var(--color-ink-soft)]">
+          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
             Precios por caja, escogidos en lonja por la mañana. Confirmamos por
             WhatsApp y entregamos en el día. Pago a la entrega.
           </p>
         </section>
 
-        <div className="mt-6">
-          <RepeatLastOrder />
-        </div>
+        <RepeatLastOrder />
 
         <CategoryTabs active={active} seedCategories={categories} />
 

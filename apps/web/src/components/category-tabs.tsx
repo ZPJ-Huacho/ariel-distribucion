@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { CategoryDef } from "@mercabana/core";
+import { cn } from "@/lib/utils";
 
 export function CategoryTabs({
   active,
@@ -13,14 +14,14 @@ export function CategoryTabs({
   const sorted = [...seedCategories].sort((a, b) => a.sortOrder - b.sortOrder);
 
   const tabs = [
-    { id: "todas", label: "Todo" },
-    ...sorted.map((c) => ({ id: c.slug, label: c.title })),
+    { id: "todas", label: "Todo", icon: "✨" },
+    ...sorted.map((c) => ({ id: c.slug, label: c.title, icon: c.icon })),
   ];
 
   return (
     <nav
       aria-label="Categorías"
-      className="no-scrollbar sticky top-[64px] z-20 -mx-4 flex items-center gap-2 overflow-x-auto border-b border-[var(--color-line)] bg-[var(--color-canvas)]/95 px-4 py-2.5 backdrop-blur lg:-mx-6 lg:px-6"
+      className="no-scrollbar sticky top-16 z-20 -mx-4 flex items-center gap-1.5 overflow-x-auto border-b border-border/60 bg-background/85 px-4 py-2.5 backdrop-blur-xl lg:-mx-6 lg:px-6"
     >
       {tabs.map((cat) => {
         const isActive = active === cat.id;
@@ -30,12 +31,16 @@ export function CategoryTabs({
             key={cat.id}
             href={href}
             scroll={false}
-            className={`shrink-0 rounded-md border px-3.5 py-1.5 text-[12px] font-medium uppercase tracking-wide transition ${
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[12.5px] font-medium transition",
               isActive
-                ? "border-brand-800 bg-brand-800 text-accent-100"
-                : "border-[var(--color-line)] bg-transparent text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] hover:text-[var(--color-ink)]"
-            }`}
+                ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                : "border-border bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground",
+            )}
           >
+            <span aria-hidden className="text-[13px]">
+              {cat.icon}
+            </span>
             {cat.label}
           </Link>
         );

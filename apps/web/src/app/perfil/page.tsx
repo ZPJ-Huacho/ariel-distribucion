@@ -24,14 +24,11 @@ export default async function PerfilPage() {
     <>
       <Header />
       <main className="mx-auto w-full max-w-md flex-1 px-4 py-10 lg:px-6">
-        <div className="mb-6 border-b border-[var(--color-line)] pb-4">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-700">
-            Cuenta
-          </span>
-          <h1 className="mt-1 font-display text-[26px] text-[var(--color-ink)]">
+        <div className="mb-6">
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground">
             Mi perfil
           </h1>
-          <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
+          <p className="mt-1 text-[14px] text-muted-foreground">
             Edita tus datos o cambia la contraseña.
           </p>
         </div>
