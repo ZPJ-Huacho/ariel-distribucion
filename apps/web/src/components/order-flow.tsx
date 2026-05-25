@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, MessageCircle, ShoppingBag } from "lucide-react";
 import { z } from "zod";
+import { ApiError } from "@mercabana/core";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { createBrowserApiClient } from "@/lib/api";
+import { useToast } from "@/lib/toast-store";
 import { cn } from "@/lib/utils";
 import {
   Card,
@@ -53,16 +56,12 @@ const initialValues: FormValues = {
   notes: "",
 };
 
-function generateOrderId(): string {
-  const n = Math.floor(2500 + Math.random() * 8000);
-  return `PED-${n}`;
-}
-
 export function OrderFlow() {
   const tenant = useTenant();
   const items = useCart((s) => s.items);
   const clearCart = useCart((s) => s.clear);
   const total = cartTotal(items);
+  const showToast = useToast((s) => s.show);
 
   const customer = useOrders((s) => s.customer);
   const hydrated = useOrders((s) => s.hydrated);
@@ -72,6 +71,8 @@ export function OrderFlow() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
   const [confirmation, setConfirmation] = useState<DemoOrder | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   useEffect(() => {
     if (hydrated && customer) {
@@ -89,8 +90,9 @@ export function OrderFlow() {
     if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setServerError(null);
     const parsed = orderSchema.safeParse(values);
     if (!parsed.success) {
       const fieldErrors: Partial<Record<keyof FormValues, string>> = {};
@@ -101,35 +103,59 @@ export function OrderFlow() {
       setErrors(fieldErrors);
       return;
     }
+
     const source = getCurrentSource();
-    const order: DemoOrder = {
-      id: generateOrderId(),
-      customerName: parsed.data.customerName,
-      customerPhone: parsed.data.customerPhone,
-      customerAddress: parsed.data.customerAddress,
-      preferredTime: parsed.data.preferredTime,
-      items: items.map((i) => ({
-        name: i.name,
-        quantity: i.quantity,
-        unit: i.unit,
-        price: i.price,
-      })),
-      total,
-      status: "pending",
-      source,
-      createdAt: new Date().toISOString(),
-      notes: parsed.data.notes,
-      isNew: true,
-    };
-    addOrder(order);
-    setCustomer({
-      customerName: parsed.data.customerName,
-      customerPhone: parsed.data.customerPhone,
-      customerAddress: parsed.data.customerAddress,
-    });
-    clearCart();
-    setConfirmation(order);
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    const itemsPayload = items.map((i) => ({
+      name: i.name,
+      quantity: i.quantity,
+      unit: i.unit,
+      price: i.price,
+    }));
+
+    setSubmitting(true);
+    try {
+      const { code } = await createBrowserApiClient().orders.create({
+        customerName: parsed.data.customerName,
+        customerPhone: parsed.data.customerPhone,
+        customerAddress: parsed.data.customerAddress,
+        preferredTime: parsed.data.preferredTime,
+        notes: parsed.data.notes,
+        source,
+        items: itemsPayload,
+      });
+
+      // El order del store local sigue siendo útil para "Repetir último pedido"
+      // y para mostrar la confirmación; el backend es la fuente de verdad.
+      const order: DemoOrder = {
+        id: code,
+        customerName: parsed.data.customerName,
+        customerPhone: parsed.data.customerPhone,
+        customerAddress: parsed.data.customerAddress,
+        preferredTime: parsed.data.preferredTime,
+        items: itemsPayload,
+        total,
+        status: "pending",
+        source,
+        createdAt: new Date().toISOString(),
+        notes: parsed.data.notes,
+        isNew: true,
+      };
+      addOrder(order);
+      setCustomer({
+        customerName: parsed.data.customerName,
+        customerPhone: parsed.data.customerPhone,
+        customerAddress: parsed.data.customerAddress,
+      });
+      clearCart();
+      setConfirmation(order);
+      if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      const msg = err instanceof ApiError ? `Error ${err.status}` : "Sin conexión";
+      setServerError(`No se pudo enviar el pedido (${msg}). Intenta de nuevo.`);
+      showToast(`No se pudo enviar el pedido (${msg})`);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (items.length === 0 && !confirmation) {
@@ -342,8 +368,13 @@ export function OrderFlow() {
               />
             </Field>
 
-            <Button type="submit" className="mt-2 w-full">
-              Confirmar pedido
+            {serverError && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-[12.5px] font-medium text-destructive">
+                {serverError}
+              </div>
+            )}
+            <Button type="submit" disabled={submitting} className="mt-2 w-full">
+              {submitting ? "Enviando…" : "Confirmar pedido"}
             </Button>
             <p className="text-center text-[11.5px] text-muted-foreground">
               {tenant.name} confirma por WhatsApp · pago a la entrega
