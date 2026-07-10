@@ -1,9 +1,7 @@
 /**
  * Mapa de assets SVG servidos como archivos estáticos desde `/public/theme/`.
  *
- * Cada entrada apunta a un archivo que también tiene una copia
- * "editable" en `src/shared/assets/svg/*.svg` como fuente de verdad.
- * Mantenerlos sincronizados: si editas la fuente, cópiala a `public/theme/`.
+ * Fuente única: `public/theme/*.svg`. Edítalos ahí directamente.
  *
  * Uso desde un componente:
  *   import { SVG_ASSETS } from "@/shared/assets/svg";
