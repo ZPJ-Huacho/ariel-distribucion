@@ -1,0 +1,1 @@
+export { QRShareCard } from "./QRShareCard";

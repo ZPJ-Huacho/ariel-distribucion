@@ -1,68 +1,107 @@
-# Mercadigital — Demo
+# Mercadigital
 
-Demo navegable de la plataforma SaaS para digitalizar mayoristas locales (vertical: frutería de Mercabarna). Construida con Next.js 16 (App Router) + Tailwind CSS 4 + Zustand. Sin backend — datos hardcodeados en `src/lib/data` para enseñar el flujo end-to-end al primer cliente.
+App fullstack para un negocio mayorista: catálogo público con pedidos por WhatsApp y panel admin.
 
-## Cuentas demo
+Stack: **Next.js 16** (App Router) · **Neon Postgres** + **Drizzle ORM** · **Auth.js v5** · **Cloudflare R2** · **TanStack Query** + **axios** (client) · **Vercel**.
 
-Pega estas credenciales en `/login` para probar cada rol.
+## Convención de arquitectura
 
-| Rol | Email | Contraseña | Qué ve |
-|---|---|---|---|
-| **Admin (dueño del negocio)** | `admin@frutas.com` | `admin123` | Catálogo + panel admin (`/admin/*`): dashboard, pedidos, productos. |
-| **Cliente final** | el que registres en `/registro` | el que tú pongas | Solo el catálogo público y su perfil pre-rellenado. |
+Separación clara **backend / frontend**:
 
-> Las cuentas de cliente final se guardan en `localStorage` del navegador. No hay backend — si limpias el storage o usas otro dispositivo, los registros se pierden.
+- **`src/core/` — Backend por dominio (Clean/Hexagonal).** Un módulo por entidad o capacidad.
+  Cada uno con `domain/` (models + ports) + `application/` (use cases) + `infrastructure/` (adapters).
+- **`src/features/` — Frontend por pantalla.** Cada uno con `ui/` (components, views) + `api/` (hooks TanStack Query + funciones axios).
+- **`src/shared/` — Compartido.** Atoms de UI, organismos reutilizados, cliente HTTP con interceptors, providers, DB, env.
+- **`src/app/` — Solo routing.** Pages thin que renderizan una view del feature. Route handlers thin que invocan un use case.
 
-## Arrancar en local
+Los componentes **NO llaman `fetch` directo**. Llaman a hooks TanStack en `features/<x>/api/use*.ts`. Los hooks llaman al cliente axios (`shared/infrastructure/http/{publicApi,privateApi}.ts`), que tiene interceptors para normalizar errores en `AppError`.
 
-```bash
-pnpm install
-pnpm dev
+```
+src/
+├── app/                           # Thin routing
+│   ├── api/…/route.ts             # invocan use case
+│   ├── admin/**/page.tsx          # → <FeatureView />
+│   ├── layout.tsx                 # QueryProvider + SettingsProvider
+│   └── page.tsx
+│
+├── core/                          # Backend (dominio)
+│   ├── shared/                    # Session, Role, DomainError
+│   ├── settings/                  # tabla settings
+│   ├── categories/                # tabla categories
+│   ├── products/                  # tabla products (+ upload de imagen)
+│   ├── orders/                    # tabla orders
+│   ├── users/                     # tabla users
+│   ├── auth/                      # Auth.js v5 + guards
+│   └── storage/                   # abstracción R2 (S3 SDK)
+│
+├── features/                      # Frontend (pantallas)
+│   ├── catalog/                   # Home público
+│   ├── order/                     # Carrito + WhatsApp
+│   ├── auth/                      # Login + Registro + Logout
+│   ├── profile/                   # Perfil (edit + password)
+│   ├── admin-dashboard/           # /admin
+│   ├── admin-products/            # /admin/productos
+│   ├── admin-categories/          # /admin/categorias
+│   ├── admin-orders/              # /admin/pedidos
+│   └── admin-settings/            # /admin/ajustes
+│
+├── shared/
+│   ├── components/
+│   │   ├── atoms/                 # Button, Input, Label, Textarea… (shadcn)
+│   │   └── organisms/
+│   │       ├── Header/            # sticky header con carrito
+│   │       └── SiteFooter/
+│   ├── infrastructure/http/       # axios publicApi + privateApi + interceptors
+│   ├── providers/                 # QueryProvider, SettingsProvider
+│   ├── lib/                       # db (schema + client), env, format, theme, i18n, cart-store, utils
+│   └── hooks/
+│
+├── middleware.ts                  # protege /admin (Auth.js edge-safe config)
+│
+drizzle/                           # migraciones + seed.sql
+drizzle.config.ts
 ```
 
-Abre [http://localhost:3000](http://localhost:3000).
+## Data-fetching
 
-Rutas relevantes:
+- **Lecturas iniciales del catálogo público**: Server Component (`CatalogView`) llama al use case directamente. Cero JS al cliente para la lista.
+- **Admin (CRUD + estados)**: componentes cliente usan hooks TanStack (`useProducts`, `useCreateProduct`, etc.) que consumen los endpoints `/api/...` a través de `axios` con interceptors. Invalidación de queries en `onSuccess`.
+- **Formularios de auth**: `signIn` / `signOut` de `next-auth/react`. Registro con TanStack mutation antes de firmar.
 
-- `/` — catálogo público (sin login).
-- `/?ref=tiktok-naranjas` — captura el origen del pedido.
-- `/pedido` — carrito + formulario de pedido.
-- `/login` y `/registro` — autenticación.
-- `/admin` — dashboard (requiere admin).
-- `/admin/pedidos` — gestión de pedidos + botón "Confirmar por WhatsApp".
-- `/admin/productos` — edición de precios y disponibilidad.
+## Setup
 
-## Estado actual
+1. **Neon.** Crea la base y copia la connection string.
+2. **R2.** Crea el bucket, habilita **Public Access** (dominio `pub-xxxx.r2.dev`), crea un token con permisos Object Read/Write.
+3. **Env.** Copia `.env.example` a `.env.local` y rellena. Genera `AUTH_SECRET` con `openssl rand -base64 32`.
+4. **Migrar.**
+   ```bash
+   pnpm install
+   pnpm db:push
+   psql "$DATABASE_URL" -f drizzle/seed.sql
+   ```
+5. **Admin inicial.** Regístrate en `/registro` y en Neon Studio: `UPDATE users SET role='admin' WHERE email='tu@correo';`.
+6. **Dev.** `pnpm dev` y abrir [http://localhost:3000](http://localhost:3000).
 
-Lo que SÍ hace la demo:
+## Deploy Vercel
 
-- Catálogo mobile-first con 20 productos de frutería, filtros por categoría.
-- Carrito persistente, flujo de pedido sin abrir WhatsApp.
-- Pedido nuevo aparece en el panel admin con badge "Nuevo".
-- Tracking de fuente vía `?ref=` (se ve en el dashboard).
-- Auto-relleno del formulario para clientes recurrentes.
-- Botón "Repetir mi último pedido" en home si hay historial.
-- Login + registro + guard de `/admin`.
-- Botón "Confirmar por WhatsApp" en cada pedido (`wa.me` con mensaje listo).
+Root Directory = raíz. Añade env vars, deploy.
 
-Lo que NO hace (queda para el producto real con Supabase):
-
-- Backend real, multi-tenant ni Row Level Security.
-- WhatsApp Business API (mensajes automáticos sin clic).
-- Persistencia de pedidos entre dispositivos.
-- Notificaciones push.
-
-## Build de producción
+## Comandos
 
 ```bash
-pnpm build
-pnpm start
+pnpm dev            # Next dev
+pnpm build          # build
+pnpm typecheck      # tsc --noEmit
+pnpm db:push        # sync schema con Neon
+pnpm db:studio      # Drizzle Studio
 ```
 
-## Deploy
+Credenciales de acceso:
+- Email: admin@mercadigital.local
+- Password: Admin1234
 
-Pensado para Vercel. Tras `vercel login`:
 
-```bash
-pnpm dlx vercel --prod
-```
+prompt: 
+
+
+"A highly detailed, professional product photograph of a specific [FRUTA O VERDURA] packed densely in a rustic, aged wooden crate, identical in construction to the crate seen in image_17.png. The crate features a distinct, realistic branding printed directly onto the front-facing plank, which reads 'ARIEL DISTRIBUCIÓN' in a clean, professional, dark blue font, exactly like the branding in image_17.png. The crate is positioned centrally on the same rough, weathered wooden table surface, against the same warm, softly blurred, and out-of-focus rustic cellar background from image_17.png. The lighting is soft and directional, highlighting the natural textures of the [FRUTA O VERDURA] and the wood grain. The perspective is a 3/4 view. Shallow depth of field focuses sharply on the crate and the front rows of the produce."

@@ -1,0 +1,63 @@
+{
+  "common": {
+    "loading": "Cargando…",
+    "save": "Guardar",
+    "saved": "Guardado ✓",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "back": "Volver",
+    "close": "Cerrar",
+    "search": "Buscar"
+  },
+  "home": {
+    "hero": {
+      "badge": "Pedidos por WhatsApp"
+    }
+  },
+  "header": {
+    "menu": "Menú",
+    "account": "Mi cuenta",
+    "login": "Acceder",
+    "register": "Crear cuenta",
+    "logout": "Cerrar sesión",
+    "adminPanel": "Panel"
+  },
+  "cart": {
+    "title": "Tu pedido",
+    "empty": "Aún no has añadido productos.",
+    "subtotal": "Subtotal",
+    "checkout": "Confirmar pedido",
+    "addedToast": "Añadido al carrito",
+    "removed": "Producto retirado"
+  },
+  "auth": {
+    "loginTitle": "Bienvenido de vuelta",
+    "loginSubtitle": "Accede para gestionar tus pedidos.",
+    "registerTitle": "Crear cuenta",
+    "registerSubtitle": "Te confirmamos por WhatsApp cuando esté listo.",
+    "labels": {
+      "name": "Nombre",
+      "email": "Email",
+      "password": "Contraseña",
+      "phone": "Teléfono"
+    },
+    "submit": {
+      "login": "Entrar",
+      "register": "Crear cuenta",
+      "submitting": "…"
+    },
+    "errors": {
+      "invalidCredentials": "Email o contraseña incorrectos.",
+      "emailInUse": "Ya existe una cuenta con ese email.",
+      "generic": "No se pudo procesar la petición.",
+      "noConnection": "Sin conexión con el servidor. Intenta de nuevo."
+    },
+    "continueAsGuest": "Seguir sin cuenta"
+  },
+  "footer": {
+    "shop": "Tienda",
+    "catalog": "Catálogo",
+    "contact": "Contacto"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1783669040929,
+      "tag": "0000_fancy_darkstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783675811769,
+      "tag": "0001_unusual_sentry",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783696990469,
+      "tag": "0002_aromatic_lizard",
+      "breakpoints": true
+    }
+  ]
+}
