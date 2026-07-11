@@ -1,9 +1,24 @@
 # Plan de venta a Ariel
 
+> Vendedor: **Erick Giancarlos Pineda Cueva** — emprendedor tecnológico, socio de **zpjstudio** (estudio de producto digital fundado con dos amigos, de ahí el nombre). Portfolio y otros proyectos con clientes en **https://zpjstudio.com**.
 > Cliente: **Ariel** — trabajador de Mercabarna (Barcelona) que revende fruta y verdura a particulares y pequeños negocios en sus horas libres.
 > Modelo actual: hace TikToks mostrando productos + dinámica, pide que le escriban a **WhatsApp** o **DM de TikTok** para hacer pedido.
 > Producto a vender: **Mercadigital** (esta app) — catálogo público con pedidos por WhatsApp + panel admin + QR compartible.
 > Precio objetivo: **20 €/mes con dominio propio**.
+
+---
+
+## Quién eres tú (para él)
+
+Antes de escribir a Ariel, ten claro cómo te posicionas. Él no compra "una web" — compra a **una persona con criterio técnico y otros proyectos vivos**, no a un freelancer que aparece un día y desaparece al siguiente.
+
+Tu narrativa:
+- Emprendedor tecnológico con **zpjstudio** — no eres un dev suelto, tienes un estudio (con socios) y otros clientes en marcha.
+- **Web pública**: https://zpjstudio.com → si Ariel te googlea, encuentra estructura y trabajos previos, no un perfil en blanco.
+- **Mercadigital es tu producto propio**, no un encargo one-off: eso implica mantenimiento, updates y roadmap. No se apaga si él no paga un mes puntual — sigue vivo con los demás clientes.
+
+**Prueba social natural** (usa según encaje en la conversación, sin restregar):
+> *"Lo llevo con zpjstudio, mi estudio con dos socios. Puedes ver otros trabajos en zpjstudio.com. Mercadigital lo montamos porque vimos que side-hustlers como tú necesitaban algo distinto a Shopify o Wix."*
 
 ---
 
@@ -21,9 +36,11 @@
 
 Corto, sin vender, con curiosidad genuina. **No menciones precio ni producto** aún.
 
-> Hola Ariel! Vi varios de tus videos vendiendo fruta y verdura de Mercabarna, muy buen curro lo tuyo. Te escribo porque llevo un tiempo pensando en montar una tool específicamente para gente como tú (vendedores que venden por TikTok / WhatsApp desde mayorista) y me flipó tu perfil. Me gustaría enseñarte lo que tengo, es una web-catálogo con QR pensada literalmente para tus videos. 5 min de video/llamada cuando puedas. ¿Te interesa?
+> Hola Ariel! Soy Erick, llevo un estudio de producto digital (zpjstudio.com) con dos socios. Vi varios de tus videos vendiendo fruta y verdura de Mercabarna, muy buen curro lo tuyo. Te escribo porque llevamos un tiempo montando una tool específicamente para gente como tú (vendedores que venden por TikTok / WhatsApp desde mayorista) y me flipó tu perfil. Me gustaría enseñarte lo que tengo, es una web-catálogo con QR pensada literalmente para tus videos. 5 min de video/llamada cuando puedas. ¿Te interesa?
 
 **Por qué funciona**:
+- Te presentas con nombre + estudio + web — no un anónimo. Si te googlea, encuentra zpjstudio.com y valida antes de responder.
+- "Llevamos" en plural: implica equipo, no dev solitario. Reduce el miedo a que el proyecto se muera si tú desapareces.
 - Reconocimiento específico ("vendiendo desde Mercabarna" — muestra que le viste los videos, no un copy-paste)
 - Se posiciona como "montándolo para gente como él" (aliado, no vendedor)
 - Cero presión: "cuando puedas"
@@ -58,7 +75,7 @@ En la demo sigues el guion:
 
 Sus videos casi seguro ponen "escríbeme al WhatsApp" con número. Guárdalo. Escribe **al día 3-4** desde el primer intento TikTok, con este mensaje:
 
-> Hola Ariel, soy [tu nombre]. Te escribí hace unos días por TikTok pero igual no lo viste (llegan un montón de DMs seguro). Te lo repito rápido: tengo una web-catálogo + QR pensada específicamente para tu modelo de negocio (vender Mercabarna por TikTok). Si te interesa verla, tardas 5 min. Adjunto link a un demo real que puedes cotillear tú solo sin compromiso: **[URL del demo]**. Si te gusta, hablamos. Si no, nada.
+> Hola Ariel, soy Erick de zpjstudio (zpjstudio.com). Te escribí hace unos días por TikTok pero igual no lo viste (llegan un montón de DMs seguro). Te lo repito rápido: tengo una web-catálogo + QR pensada específicamente para tu modelo de negocio (vender Mercabarna por TikTok). Si te interesa verla, tardas 5 min. Adjunto link a un demo real que puedes cotillear tú solo sin compromiso: **[URL del demo]**. Si te gusta, hablamos. Si no, nada.
 
 **Truco importante**: el "demo sin compromiso" que él puede visitar es **oro puro**. Si le mandas un link, aunque no responda, es probable que lo abra. Ver es creer.
 
@@ -90,6 +107,7 @@ Cuando le enseñes la demo y vayas al momento del precio, evita "son 20 euros al
 - **Riesgo cero**: *"Primer mes gratis. Lo pruebas 4 semanas con tus TikToks, si en el 30 no ha valido la pena, no me pagas y borramos la web."*
 - **Tiempo, no dinero**: *"Con que dejes de contestar 3 DMs de precio al día, ya te ha ahorrado más que los 20€/mes."*
 - **Concreto sobre dominio**: *"El dominio en Namecheap son 10€/año, ya lo incluyo. No tienes que hacer nada."*
+- **Prueba de que no eres un tipo raro**: *"El estudio es zpjstudio.com, ahí tienes otros proyectos que llevamos con clientes. No desaparezco al mes siguiente — Mercadigital lo mantengo como producto, no como encargo."*
 
 ---
 
@@ -100,6 +118,7 @@ Cuando le enseñes la demo y vayas al momento del precio, evita "son 20 euros al
 - [ ] **Foto de furgoneta / mercado en el hero** (ya está la tuya, pero si consigues una suya en un TikTok, screenshot y la subes → efecto "esto es tuyo" x1000)
 - [ ] **QR generado apuntando al demo** — le mandas la imagen del QR con el mensaje del día 3-4, "escanea y cotillea"
 - [ ] **Guion de demo cronometrado** — máximo 8 minutos, no 20
+- [ ] **zpjstudio.com actualizado** — antes de escribirle, asegúrate de que tu web tiene al menos 2-3 proyectos visibles y tu contacto. Va a googlearte, y si aterriza en una landing rota queda peor que si no te googlea.
 
 ---
 
