@@ -42,7 +42,8 @@ export class GenerateAIImageUseCase {
     if (currentUsed >= limit) throw new ConflictError("ai_daily_limit_reached");
 
     const product = await this.products.findById(productId);
-    if (!product) throw new NotFoundError("product");
+    if (!product) throw new NotFoundError("producto");
+    const previousImageKey = product.imageKey;
 
     const generated = await generateProductImage({
       productName: product.name,
@@ -61,17 +62,13 @@ export class GenerateAIImageUseCase {
       throw new ConflictError(upload.error);
     }
 
-    const previous = await this.products.setImageKey(productId, upload.key);
-    if (previous === null) {
-      await this.storage.delete(upload.key).catch(() => {});
-      throw new NotFoundError("producto");
-    }
+    await this.products.setImageKey(productId, upload.key);
     if (
-      previous &&
-      !previous.startsWith("http") &&
-      !previous.startsWith("data:")
+      previousImageKey &&
+      !previousImageKey.startsWith("http") &&
+      !previousImageKey.startsWith("data:")
     ) {
-      await this.storage.delete(previous).catch(() => {});
+      await this.storage.delete(previousImageKey).catch(() => {});
     }
 
     // Descontar cuota al generar
