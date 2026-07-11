@@ -33,15 +33,33 @@ async function loadSettings() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const s = await loadSettings();
+  const [s, origin] = await Promise.all([loadSettings(), resolveOrigin()]);
+  const title = `${s.businessName}${s.tagline ? ` · ${s.tagline}` : ""}`;
+  const description = `${s.businessName}${s.tagline ? ` — ${s.tagline}.` : ""} Catálogo, precios por caja y entrega en el día.`;
+  const ogImage = {
+    url: "/og.png",
+    width: 1200,
+    height: 630,
+    alt: s.businessName,
+  };
   return {
-    title: `${s.businessName}${s.tagline ? ` · ${s.tagline}` : ""}`,
-    description: `${s.businessName}${s.tagline ? ` — ${s.tagline}.` : ""} Catálogo, precios por caja y entrega en el día.`,
+    metadataBase: new URL(origin),
+    title,
+    description,
     openGraph: {
       title: s.businessName,
-      description: s.tagline,
+      description: s.tagline || description,
+      siteName: s.businessName,
       type: "website",
       locale: "es_ES",
+      url: origin,
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: s.businessName,
+      description: s.tagline || description,
+      images: [ogImage.url],
     },
   };
 }
