@@ -15,9 +15,8 @@ const TEXT_MODELS: string[] = process.env.GEMINI_TEXT_MODEL
   : [
       "gemini-2.5-flash-lite",
       "gemini-flash-lite-latest",
-      "gemini-2.0-flash-lite-001",
-      "gemini-2.0-flash",
       "gemini-2.5-flash",
+      "gemini-flash-latest",
     ];
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const textEndpoint = (model: string) =>
@@ -165,28 +164,34 @@ type GeminiTextBody = {
   safetySettings: Array<{ category: string; threshold: string }>;
 };
 
-/** Llama a un modelo de texto concreto. Devuelve { text, retryable429 }. */
+/**
+ * Llama a un modelo de texto concreto. Devuelve { text, retryable }.
+ * `retryable` = true cuando tiene sentido probar el siguiente modelo del fallback:
+ * - 429 (quota agotada de ese modelo)
+ * - 404 (modelo deprecado/renombrado)
+ * - 5xx (error transitorio de Google)
+ * `retryable` = false para 401/403 (auth) o respuestas vacías por safety (misma clave, mismo prompt → mismo resultado).
+ */
 async function callTextModel(
   model: string,
   apiKey: string,
   body: GeminiTextBody,
-): Promise<{ text: string; retryable429: boolean }> {
+): Promise<{ text: string; retryable: boolean }> {
   const res = await fetch(`${textEndpoint(model)}?key=${apiKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 
-  if (res.status === 429) {
-    const errText = await res.text().catch(() => "");
-    console.warn(`[Gemini text 429] ${model} — probando siguiente`, errText.slice(0, 200));
-    return { text: "", retryable429: true };
-  }
-
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    console.error(`[Gemini text error]`, model, res.status, errText);
-    return { text: "", retryable429: false };
+    const retryable = res.status === 429 || res.status === 404 || res.status >= 500;
+    const level = retryable ? "warn" : "error";
+    console[level](
+      `[Gemini text ${res.status}] ${model}${retryable ? " — probando siguiente" : ""}`,
+      errText.slice(0, 200),
+    );
+    return { text: "", retryable };
   }
 
   const rawJson = await res.json();
@@ -213,10 +218,10 @@ async function callTextModel(
       "promptFeedback:",
       JSON.stringify(json.promptFeedback),
     );
-    return { text: "", retryable429: false };
+    return { text: "", retryable: false };
   }
 
-  return { text, retryable429: false };
+  return { text, retryable: false };
 }
 
 /**
@@ -259,9 +264,8 @@ export async function generateProductDescription({
   };
 
   for (const model of TEXT_MODELS) {
-    const { text, retryable429 } = await callTextModel(model, apiKey, body);
+    const { text, retryable } = await callTextModel(model, apiKey, body);
     if (text) {
-      // Éxito — limpiar y devolver
       const cleaned = text
         .replace(/^["'“”]|["'“”]$/g, "")
         .replace(/\s+/g, " ")
@@ -269,15 +273,14 @@ export async function generateProductDescription({
         .slice(0, 240);
       return cleaned;
     }
-    if (!retryable429) {
-      // Error no recuperable (auth, respuesta vacía por safety, etc)
+    if (!retryable) {
+      // Auth error o respuesta vacía por safety — probar más modelos no ayuda
       return "";
     }
-    // Era 429, seguimos con el siguiente modelo
   }
 
   console.error(
-    "[Gemini text] TODOS los modelos devolvieron 429 — activar billing o esperar reset diario",
+    "[Gemini text] TODOS los modelos del fallback fallaron — revisar quota, key o lista de modelos",
   );
   return "";
 }
