@@ -32,60 +32,83 @@ Tu narrativa:
 
 ---
 
-## Fase 1 — Mensaje inicial en TikTok (día 0)
+## Fase 1 — Mensaje inicial en TikTok (día 0) — **Show, don't tell**
 
-Corto, sin vender, con curiosidad genuina. **No menciones precio ni producto** aún.
+**Precondición crítica**: la demo tiene que estar **personalizada con SU marca** — logo "Ariel Distribución", hero con su furgoneta si la sacas de un TikTok suyo, productos realistas (Naranja Navelina Valencia, Tomate Rambo, etc.). Si le mandas una demo genérica llamada "Mercadigital", el mensaje frío se convierte en spam. Si le mandas literalmente **su tienda funcionando**, es imposible ignorar.
 
-> Hola Ariel! Soy Erick, llevo un estudio de producto digital (zpjstudio.com) con dos socios. Vi varios de tus videos vendiendo fruta y verdura de Mercabarna, muy buen curro lo tuyo. Te escribo porque llevamos un tiempo montando una tool específicamente para gente como tú (vendedores que venden por TikTok / WhatsApp desde mayorista) y me flipó tu perfil. Me gustaría enseñarte lo que tengo, es una web-catálogo con QR pensada literalmente para tus videos. 5 min de video/llamada cuando puedas. ¿Te interesa?
+Deploya la demo en un subdominio dedicado antes de escribirle:
+`ariel.zpjstudio.com` (o `mercadigital.zpjstudio.com/ariel`)
 
-**Por qué funciona**:
-- Te presentas con nombre + estudio + web — no un anónimo. Si te googlea, encuentra zpjstudio.com y valida antes de responder.
-- "Llevamos" en plural: implica equipo, no dev solitario. Reduce el miedo a que el proyecto se muera si tú desapareces.
-- Reconocimiento específico ("vendiendo desde Mercabarna" — muestra que le viste los videos, no un copy-paste)
-- Se posiciona como "montándolo para gente como él" (aliado, no vendedor)
-- Cero presión: "cuando puedas"
-- Concreto: web-catálogo + QR + pensada para TikTok → sabe de qué va sin sobrevenderlo
-- Pregunta cerrada al final
+Mensaje corto, directo, con el link visible:
+
+> Ariel! Soy Erick, de zpjstudio (zpjstudio.com). Vi tus videos vendiendo fruta y verdura de Mercabarna y me lié — te monté una web-catálogo con tu marca para que veas cómo quedaría. Está funcionando, puedes abrirla y hacer un pedido de prueba: **https://ariel.zpjstudio.com**
+>
+> Es para que dejes de contestar los "cuánto vale la caja de naranjas" por DM. QR debajo de tus TikToks → cliente escanea → ve todo → pedido te llega por WhatsApp con nombre, dirección y productos.
+>
+> Si te encaja, hablamos. Si no, te queda montada por si acaso.
+
+**Por qué funciona** (bien ejecutado):
+- **No vendes: regalas** — le montaste algo con SU marca antes de que dijera nada. Genera reciprocidad.
+- **Cero fricción**: no pide reunión, no pide respuesta, no pide dinero. Solo "abre esto".
+- **Demo > pitch**: en 30 segundos de scroll ve el hero con su nombre, sus productos, el flow de pedido. Vende sola.
+- **Prueba de intención real**: alguien que te monta la web antes de venderte no es un cold-mailer de 500 leads/día.
+- **"Si no, te queda montada"**: quita presión, y encima le regala opcionalidad — psicológicamente ya es suya.
+
+**Por qué es más arriesgado que el approach clásico**:
+- **Si abre y no lo pilla, no vuelve**. No hay reunión donde recuperar la venta.
+- **Coste tuyo**: 2-3h montando la demo antes de saber si le interesa. Solo hazlo si Ariel encaja perfecto en el perfil ICP.
+- **Puede copiar la idea** o pasarla a un amigo dev que se la haga por 200€. Contramedida: el precio no es la web, es que TÚ la mantengas + updates + soporte. Deja eso claro en Fase 2.
+
+**Si tienes dudas del approach**: la versión conservadora del mensaje inicial está guardada en el [anexo — Alternativa A](#anexo--alternativa-a-mensaje-suave-sin-link). Úsala si NO puedes montar la demo personalizada antes de escribirle.
 
 ---
 
-## Fase 2 — Si responde interesado (día 0-1)
+## Fase 2 — Si responde después de abrir el link (día 0-1)
 
-Responde rápido (< 1 hora si es horario laboral). Pídele **5 min de videollamada** (Google Meet, WhatsApp video, TikTok Live-privado, lo que él prefiera). Videollamada > audio > texto porque en video muestras la demo:
+Responde rápido (< 1 hora si es horario laboral). Ya vio la web pública. Lo que **no** vio es el panel admin (dashboard, pedidos, ajustes, generación IA de fotos). Ahí está el resto del valor. Pídele 10 min:
 
-> Perfecto! Te mando link a Meet ahora o prefieres que sea por whatsapp video? Tengo la demo lista con datos de ejemplo de fruta/verdura para que te veas identificado.
+> Ostras, gracias por responder! Lo que abriste es la parte pública, la que ve su cliente. Detrás tienes un panel admin con dashboard de pedidos, gráficos de lo que más se vende, generación de fotos de productos con IA, todo eso. ¿Sacas 10 min por WhatsApp video o Meet y te lo enseño? Te doy acceso admin ya al terminar.
 
-En la demo sigues el guion:
-1. **Hero con la furgoneta** → 30 seg de impacto visual
-2. **Un cliente hace un pedido** (simulas: añadir productos → /pedido → confirmar) → llega a WhatsApp estructurado
-3. **Panel admin: pedidos entrando** → estados, historial
-4. **Ajustes: cambia el logo delante de él** → momento wow
+Guion del demo por video:
+1. **Recorrer con él la landing** que ya vio (refuerzas que se sienta dueño)
+2. **Panel admin — pedidos entrando**: estados, historial, cerrar pedido → WhatsApp automático
+3. **Ajustes: cambiar logo/frase/horario delante de él** → momento wow
+4. **Generación IA de imagen** de un producto suyo real → momento wow x2
 5. **Dashboard con gráficos** → sensación de control
 6. **QR de su catálogo** → cierra el loop TikTok → cliente
 
 **Al final del demo, no vendas, pregunta**: *"¿esto te ahorra algo? ¿qué tendría que tener para que lo usaras mañana?"* — te está diciendo el precio psicológico y el feature bloqueante.
 
+**Si dice que sí ahí mismo**: cierra el precio (20€/mes con dominio) y tira de **"primer mes gratis"** para eliminar la última resistencia. Le migras el dominio esa misma semana.
+
+## Fase 2-bis — Si abrió el link pero no responde (día 2-3)
+
+Tu analytics (Vercel/Plausible) te dice si entró en `ariel.zpjstudio.com`. Si abrió pero no contestó, follow-up ligero, con **un feature nuevo** como excusa (no repitas el pitch):
+
+> Ariel, veo que le echaste un ojo. Le acabo de meter la generación de foto de producto con IA (le pones el nombre y te saca una foto profesional en caja de madera con tu marca). Pruébalo aquí: **[link a producto de la demo]**. Si te encaja lo hablamos, si no también, cero drama.
+
 ---
 
-## Fase 3 — Si NO responde en TikTok (día 2)
+## Fase 3 — Si NO responde en TikTok (día 4-5)
 
-**No insistas en TikTok**. Un segundo mensaje ahí queda desesperado. Cambia de canal:
+**No insistas en TikTok**. Un segundo mensaje ahí queda desesperado. Cambia de canal — pero **no repitas el link ni el pitch**, ya los tuvo. Cambia el ángulo.
 
-### Opción A — Encontrar su WhatsApp
+### Opción A — WhatsApp con ángulo "ya lo estoy usando otro cliente"
 
-Sus videos casi seguro ponen "escríbeme al WhatsApp" con número. Guárdalo. Escribe **al día 3-4** desde el primer intento TikTok, con este mensaje:
+Sus videos casi seguro ponen "escríbeme al WhatsApp" con número. Guárdalo. Al día 4-5:
 
-> Hola Ariel, soy Erick de zpjstudio (zpjstudio.com). Te escribí hace unos días por TikTok pero igual no lo viste (llegan un montón de DMs seguro). Te lo repito rápido: tengo una web-catálogo + QR pensada específicamente para tu modelo de negocio (vender Mercabarna por TikTok). Si te interesa verla, tardas 5 min. Adjunto link a un demo real que puedes cotillear tú solo sin compromiso: **[URL del demo]**. Si te gusta, hablamos. Si no, nada.
+> Hola Ariel, soy Erick de zpjstudio. Te escribí por TikTok hace unos días con el link de la web (ariel.zpjstudio.com si no lo viste, sigue montada). Te aviso: acabo de cerrar con otro vendedor de Mercabarna que la va a usar desde el lunes. Te lo digo por si quieres que te la deje bloqueada esta semana antes de meterme con más clientes. Sin compromiso, tú me dices.
 
-**Truco importante**: el "demo sin compromiso" que él puede visitar es **oro puro**. Si le mandas un link, aunque no responda, es probable que lo abra. Ver es creer.
+**Por qué funciona este ángulo**:
+- Sesgo de prueba social ("otro vendedor de Mercabarna" — mismo mercado, mismo perfil)
+- Escasez suave sin ser agresiva
+- Le recuerdas el link sin repostearlo (menos spammy)
 
-### Opción B — Si Whatsapp tampoco
+### Opción B — Volver a TikTok con un logro
 
-Al día 7-10 vuelves a TikTok con un ángulo distinto — **un logro concreto tuyo**, no un pitch:
+Al día 10-12, si sigue sin nada, cambia de nuevo el frame:
 
-> Ariel! Ya tengo el primer cliente usando la tool que te comenté (un frutero en Sant Boi). Recuperó 2h/día de contestar WhatsApp. Sigo pensando que a ti también te encajaría. Cuando quieras te la enseño, sin compromiso.
-
-Aunque no tengas ese cliente aún, la implicación es que la tool está probada. **Sesgo de prueba social**: si alguien más la usa, no soy conejillo de indias.
+> Ariel! Actualización: la tool que te enseñé se la está usando un frutero de Sant Boi y me dice que dejó de perder 2h/día en DMs. Sigo pensando que a ti te encajaría mejor incluso. Ahí sigue tu demo por si un día la quieres activar: **https://ariel.zpjstudio.com**
 
 ---
 
@@ -113,12 +136,20 @@ Cuando le enseñes la demo y vayas al momento del precio, evita "son 20 euros al
 
 ## Materiales para tener listos ANTES de escribirle
 
-- [ ] **Demo con datos realistas** — no "Producto de prueba", sino "Naranja Navelina Valencia · caja 10kg · 18€", "Tomate Rambo · caja 5kg · 12€"…
-- [ ] **Logo genérico "Ariel Distribución"** (o le pides el suyo el día del demo y lo cargas en 30 seg — momento wow)
-- [ ] **Foto de furgoneta / mercado en el hero** (ya está la tuya, pero si consigues una suya en un TikTok, screenshot y la subes → efecto "esto es tuyo" x1000)
-- [ ] **QR generado apuntando al demo** — le mandas la imagen del QR con el mensaje del día 3-4, "escanea y cotillea"
-- [ ] **Guion de demo cronometrado** — máximo 8 minutos, no 20
-- [ ] **zpjstudio.com actualizado** — antes de escribirle, asegúrate de que tu web tiene al menos 2-3 proyectos visibles y tu contacto. Va a googlearte, y si aterriza en una landing rota queda peor que si no te googlea.
+Con la estrategia "mando el link en el mensaje 1", el prep-work es **mucho mayor** — pero el ROI también:
+
+- [ ] **Subdominio deployado**: `ariel.zpjstudio.com` (o similar) apuntando a la instancia de Ariel, con el mensaje "no está indexado por Google" (`X-Robots-Tag: noindex`) para que no aparezca en búsquedas sin querer
+- [ ] **Logo "Ariel Distribución"** cargado en Ajustes → aparece en header + footer + OG image
+- [ ] **Hero con SU furgoneta** — screenshot de un TikTok suyo, o la más parecida que encuentres. Este es EL detalle que le hace decir "espera, ¿esto es mío?"
+- [ ] **Frase de hero personalizada** — algo tipo "Fruta y verdura fresca de Mercabarna, directa a tu negocio" (leído en algún video suyo si le has puesto atención)
+- [ ] **10 productos realistas cargados** — "Naranja Navelina Valencia · caja 10kg · 18€", "Tomate Rambo · caja 5kg · 12€", con fotos IA generadas de cada uno (aprovecha la feature nueva)
+- [ ] **Categorías reales**: Cítricos, Hoja, Fruta hueso, Verdura de fruto, Patatas, Ajos y cebollas
+- [ ] **Horario semanal** — el mismo que dice en sus TikToks (mercabarna abre a las 6, si vende por las tardes, refleja eso)
+- [ ] **WhatsApp del hero** = SU número real (leído de sus videos). Un botón "Pedir por WhatsApp" que abra chat con él es magia — no con tu número placeholder
+- [ ] **QR generado** apuntando a `ariel.zpjstudio.com` — descárgalo en PNG, se lo mandas también en el DM: "para que veas cómo quedaría debajo de tus TikToks"
+- [ ] **zpjstudio.com actualizado** — antes de escribirle, asegúrate de que tu web tiene al menos 2-3 proyectos visibles y tu contacto. Va a googlearte tras leer tu mensaje, y si aterriza en una landing rota queda peor que si no te googlea.
+
+**Regla**: si NO puedes tachar todos los items de arriba, cae al mensaje suave del [anexo A](#anexo--alternativa-a-mensaje-suave-sin-link). No hay término medio — o le mandas SU tienda funcionando, o no le mandas link.
 
 ---
 
@@ -153,6 +184,32 @@ Estructura clásica valor > precio:
 
 ## Meta objetiva
 
-En este perfil (side hustler ocupado), la tasa de conversión es baja pero directa: **si acepta ver el demo, convierte 60-70%**. La batalla es que acepte la reunión. Todo el plan arriba está diseñado para eso.
+Con la estrategia "mando el link personalizado en el mensaje 1":
+- **Open rate del link**: ~70% (todos los que abran DM lo van a clicar por curiosidad si ven su nombre)
+- **Respuesta al DM**: ~30-40% si la demo está bien hecha
+- **Cierre si responde**: ~50-60%
+- **Cierre esperado end-to-end**: ~12-18%
+
+Con la estrategia clásica (curiosidad, sin link):
+- **Respuesta al DM**: ~15-20%
+- **Cierre si acepta reunión**: ~60-70%
+- **Cierre end-to-end**: ~10-14%
+
+Los números son parecidos, pero el approach agresivo **saca mucho más aprendizaje** aunque no cierre — te dice qué features llaman la atención (analytics), abre puertas para follow-ups con más contexto, y te da un pipeline de leads calificados aunque no compren esta vez.
 
 Si al mes 1 no cierra pero mantiene contacto, **guárdalo en el pipeline** — vendrá el momento en que un pedido perdido le hará click.
+
+---
+
+## Anexo — Alternativa A (mensaje suave, sin link)
+
+Úsala si NO puedes montar la demo personalizada de Ariel antes de escribirle. Es la versión conservadora del approach:
+
+> Hola Ariel! Soy Erick, llevo un estudio de producto digital (zpjstudio.com) con dos socios. Vi varios de tus videos vendiendo fruta y verdura de Mercabarna, muy buen curro lo tuyo. Te escribo porque llevamos un tiempo montando una tool específicamente para gente como tú (vendedores que venden por TikTok / WhatsApp desde mayorista) y me flipó tu perfil. Me gustaría enseñarte lo que tengo, es una web-catálogo con QR pensada literalmente para tus videos. 5 min de video/llamada cuando puedas. ¿Te interesa?
+
+**Cuándo cae aquí**:
+- No tienes tiempo esta semana para montar `ariel.zpjstudio.com`
+- Ariel no es un lead prioritario (tirar 2-3h en un lead marginal no compensa)
+- Es un batch de outreach a 10+ vendedores similares (no puedes personalizar cada uno)
+
+**El resto del funnel (Fases 2-4) queda igual**, solo cambias que en Fase 2 tú le enseñas la demo por video, en vez de que él haya entrado solo.
