@@ -25,10 +25,7 @@ export async function POST(req: Request) {
     const settings = await getSettingsRepository().get();
     if (!settings?.aiEnabled) throw new ConflictError("ai_disabled");
 
-    const description = await generateProductDescription({
-      productName,
-      businessName: settings.businessName,
-    });
+    const description = await generateProductDescription({ productName });
 
     if (!description) throw new ConflictError("empty_description");
 

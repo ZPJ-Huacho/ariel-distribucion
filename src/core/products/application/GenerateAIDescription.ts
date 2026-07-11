@@ -39,7 +39,6 @@ export class GenerateAIDescriptionUseCase {
 
     const description = await generateProductDescription({
       productName: product.name,
-      businessName: settings.businessName,
     });
 
     if (!description) throw new ConflictError("empty_description");

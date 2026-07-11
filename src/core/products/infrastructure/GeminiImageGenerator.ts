@@ -144,15 +144,18 @@ export async function generateProductImage({
   };
 }
 
-const DESC_PROMPT_TEMPLATE = `Escribe una descripción corta y comercial en español para el producto "{PRODUCT}" que vende "{BUSINESS}" (distribución mayorista de fruta y verdura fresca desde Mercabarna).
+const DESC_PROMPT_TEMPLATE = `Describe el producto "{PRODUCT}" en español para una ficha de catálogo.
 
-Requisitos estrictos:
-- Máximo 160 caracteres, ideal 100-140.
-- 1 o 2 frases, directas y apetecibles.
-- Menciona brevemente calidad, frescura, origen o características típicas del producto.
-- No uses emojis.
-- No uses comillas, ni prefijos tipo "Descripción:", ni saltos de línea.
-- Solo devuelve el texto plano de la descripción, nada más.`;
+Reglas:
+- Una sola frase, entre 60 y 120 caracteres.
+- Describe el producto en sí: variedad, sabor, textura, tamaño o uso típico en cocina.
+- No hables del negocio, ni del vendedor, ni de la distribución, ni del origen (nada de Mercabarna, distribución, mayorista, tienda, etc).
+- No uses frases de marketing tipo "extra fresco", "seleccionado con mimo", "de la mejor calidad", "en su punto óptimo".
+- No uses adjetivos vacíos como "delicioso", "riquísimo", "excelente".
+- No uses emojis, comillas, ni prefijos tipo "Descripción:".
+- Devuelve solo el texto plano, nada más.
+
+Ejemplo del estilo esperado (para "Aguacate Hass"): Variedad Hass, pulpa cremosa y sabor a nuez, ideal para guacamole, tostadas y ensaladas.`;
 
 type GeminiTextBody = {
   contents: Array<{ role: string; parts: Array<{ text: string }> }>;
@@ -234,18 +237,13 @@ async function callTextModel(
  */
 export async function generateProductDescription({
   productName,
-  businessName,
 }: {
   productName: string;
-  businessName: string;
 }): Promise<string> {
   const apiKey = env.GEMINI_API_KEY;
   if (!apiKey) throw new ConflictError("gemini_api_key_missing");
 
-  const prompt = DESC_PROMPT_TEMPLATE.replaceAll("{PRODUCT}", productName).replaceAll(
-    "{BUSINESS}",
-    businessName || "MERCADIGITAL",
-  );
+  const prompt = DESC_PROMPT_TEMPLATE.replaceAll("{PRODUCT}", productName);
 
   const body: GeminiTextBody = {
     contents: [{ role: "user", parts: [{ text: prompt }] }],
