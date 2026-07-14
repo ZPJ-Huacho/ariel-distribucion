@@ -39,6 +39,18 @@ export async function generateAIProductImage(id: string): Promise<{
   return data;
 }
 
+export async function generateStandaloneAIImage(
+  productName: string,
+): Promise<{ url: string; key: string; used: number; limit: number }> {
+  const { data } = await privateApi.post<{
+    url: string;
+    key: string;
+    used: number;
+    limit: number;
+  }>(`/api/ai/image`, { productName });
+  return data;
+}
+
 export async function generateAIProductDescription(
   productName: string,
 ): Promise<{ description: string }> {

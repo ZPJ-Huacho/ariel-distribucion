@@ -10,6 +10,7 @@ import {
   fetchProducts,
   generateAIProductDescription,
   generateAIProductImage,
+  generateStandaloneAIImage,
   updateProduct,
   uploadProductImage,
 } from "./products.api";
@@ -67,6 +68,20 @@ export function useGenerateAIImage() {
     mutationFn: (id) => generateAIProductImage(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: productKeys.all });
+      qc.invalidateQueries({ queryKey: ["settings"] });
+    },
+  });
+}
+
+export function useGenerateStandaloneAIImage() {
+  const qc = useQueryClient();
+  return useMutation<
+    { url: string; key: string; used: number; limit: number },
+    AppError,
+    string
+  >({
+    mutationFn: (productName) => generateStandaloneAIImage(productName),
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["settings"] });
     },
   });

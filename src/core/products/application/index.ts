@@ -122,4 +122,5 @@ export function listProductsUseCase() {
 }
 
 export { GenerateAIImageUseCase } from "./GenerateAIImage";
+export { GenerateAIImageStandaloneUseCase } from "./GenerateAIImageStandalone";
 export { GenerateAIDescriptionUseCase } from "./GenerateAIDescription";

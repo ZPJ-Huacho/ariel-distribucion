@@ -17,6 +17,7 @@ import {
   useCreateProduct,
   useGenerateAIDescription,
   useGenerateAIImage,
+  useGenerateStandaloneAIImage,
   useUpdateProduct,
   useUploadProductImage,
 } from "../../../api/useProducts";
@@ -76,6 +77,7 @@ export function ProductFormDialog({
   const update = useUpdateProduct();
   const upload = useUploadProductImage();
   const generateAI = useGenerateAIImage();
+  const generateAIStandalone = useGenerateStandaloneAIImage();
   const generateAIDesc = useGenerateAIDescription();
 
   const [internalOpen, setInternalOpen] = useState(false);
@@ -89,12 +91,18 @@ export function ProductFormDialog({
   const [preview, setPreview] = useState<string | null>(
     product?.imageUrl ?? null,
   );
+  // Cuando aún no existe producto (modo crear), guardamos aquí la key de la
+  // imagen generada por IA para adjuntarla en el payload de create.
+  const [pendingAIImageKey, setPendingAIImageKey] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     if (actualOpen) {
       setForm(initial(product, categories[0]?.slug));
       setFile(null);
       setPreview(product?.imageUrl ?? null);
+      setPendingAIImageKey(null);
     }
   }, [actualOpen, product, categories]);
 
@@ -106,56 +114,31 @@ export function ProductFormDialog({
   const busy = create.isPending || update.isPending || upload.isPending;
   const aiEnabled = !!settings?.aiEnabled;
   const priceNum = Number(form.price);
-  // Imagen necesita todos los campos requeridos (porque guardamos el producto si no existe)
-  const requiredOk =
-    !!form.name.trim() &&
-    !!form.unit.trim() &&
-    !!form.category &&
-    priceNum > 0;
-  const canGenerateImage = aiEnabled && requiredOk;
-  // Descripción solo necesita nombre (no guarda producto, solo devuelve texto)
+  // Solo el nombre es necesario para generar la imagen — no guardamos producto.
+  const canGenerateImage = aiEnabled && !!form.name.trim();
   const canGenerateDescription = aiEnabled && !!form.name.trim();
   const imageDisabledReason = !form.name.trim()
-    ? "Pon un nombre al producto."
-    : !form.category
-      ? "Elige una categoría."
-      : !(priceNum > 0)
-        ? "Añade un precio válido."
-        : !form.unit.trim()
-          ? "Añade la unidad (ej: caja 5 kg)."
-          : "";
-
-  /** Guarda el producto si aún no existe y devuelve su ID. */
-  async function ensureProductId(): Promise<string | null> {
-    if (product?.id) return product.id;
-    if (!requiredOk) {
-      toast.error("Completa los campos requeridos antes de generar.");
-      return null;
-    }
-    const payload = {
-      name: form.name,
-      description: form.description,
-      price: priceNum,
-      unit: form.unit,
-      emoji: "📦",
-      gradient: "",
-      category: form.category,
-      isAvailable: form.isAvailable,
-      isHighlighted: form.isHighlighted,
-    };
-    const created = await create.mutateAsync(payload);
-    return created.id;
-  }
+    ? "Pon un nombre al producto primero."
+    : "";
+  const generatingImage = generateAI.isPending || generateAIStandalone.isPending;
 
   async function handleGenerateImage() {
-    if (!aiEnabled) return;
+    if (!aiEnabled || !form.name.trim()) return;
     try {
-      const id = await ensureProductId();
-      if (!id) return;
-      const result = await generateAI.mutateAsync(id);
-      setPreview(result.url);
-      setFile(null);
-      toast.success(`Imagen generada · ${result.used}/${result.limit}`);
+      if (isEdit && product?.id) {
+        // Producto ya existe: usar endpoint que attach a producto.
+        const result = await generateAI.mutateAsync(product.id);
+        setPreview(result.url);
+        setFile(null);
+        toast.success(`Imagen generada · ${result.used}/${result.limit}`);
+      } else {
+        // Crear: solo genera imagen y guarda key en memoria hasta el submit.
+        const result = await generateAIStandalone.mutateAsync(form.name.trim());
+        setPreview(result.url);
+        setFile(null);
+        setPendingAIImageKey(result.key);
+        toast.success(`Imagen generada · ${result.used}/${result.limit}`);
+      }
     } catch (err) {
       toast.error(toUiMessage(err, "No pudimos generar la imagen"));
     }
@@ -190,6 +173,8 @@ export function ProductFormDialog({
       category: form.category,
       isAvailable: form.isAvailable,
       isHighlighted: form.isHighlighted,
+      // Al crear, adjuntamos la key de la imagen generada por IA si existe.
+      ...(!isEdit && pendingAIImageKey ? { imageKey: pendingAIImageKey } : {}),
     };
 
     try {
@@ -214,6 +199,8 @@ export function ProductFormDialog({
     if (f) {
       const url = URL.createObjectURL(f);
       setPreview(url);
+      // Si el usuario sube su propia imagen, descartamos la IA generada previa.
+      setPendingAIImageKey(null);
     }
   }
 
@@ -251,7 +238,7 @@ export function ProductFormDialog({
           <div className="flex flex-col gap-3">
             <div className="flex gap-3">
               <label className="group relative flex h-24 w-24 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border/60 bg-muted/40 transition-colors hover:border-primary/60 hover:bg-primary/5">
-                {generateAI.isPending ? (
+                {generatingImage ? (
                   <div className="flex flex-col items-center gap-1 text-primary">
                     <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
                     <span className="text-[10px] font-medium">Generando…</span>
@@ -309,18 +296,14 @@ export function ProductFormDialog({
                   <button
                     type="button"
                     onClick={handleGenerateImage}
-                    disabled={
-                      !canGenerateImage ||
-                      generateAI.isPending ||
-                      create.isPending
-                    }
+                    disabled={!canGenerateImage || generatingImage}
                     className={cn(
                       "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm shadow-primary/25 transition-all",
                       "hover:bg-primary/90",
                       "disabled:cursor-not-allowed disabled:opacity-50",
                     )}
                   >
-                    {generateAI.isPending || create.isPending ? (
+                    {generatingImage ? (
                       <Loader2
                         className="h-3.5 w-3.5 animate-spin"
                         aria-hidden
@@ -328,16 +311,11 @@ export function ProductFormDialog({
                     ) : (
                       <Sparkles className="h-3.5 w-3.5" aria-hidden />
                     )}
-                    {generateAI.isPending || create.isPending
-                      ? "Generando…"
-                      : isEdit
-                        ? "Generar imagen"
-                        : "Guardar y generar imagen"}
+                    {generatingImage ? "Generando…" : "Generar imagen"}
                   </button>
                 </div>
                 {!canGenerateImage &&
-                  !generateAI.isPending &&
-                  !create.isPending &&
+                  !generatingImage &&
                   imageDisabledReason && (
                     <p className="text-[11px] text-muted-foreground">
                       {imageDisabledReason}
