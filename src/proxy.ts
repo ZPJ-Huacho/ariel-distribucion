@@ -6,14 +6,22 @@ import { isAdmin } from "@/core/shared";
 const { auth: proxy } = NextAuth(authConfig);
 
 export default proxy((req) => {
-  if (!isAdmin(req.auth?.user?.role)) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/";
-    url.search = "";
+  const user = req.auth?.user;
+  if (isAdmin(user?.role)) return;
+
+  const url = req.nextUrl.clone();
+  url.pathname = "/";
+  url.search = "";
+
+  if (!user) {
+    // Sin sesión → abre el modal de login pegado al catálogo.
     url.searchParams.set("auth", "login");
     url.searchParams.set("next", req.nextUrl.pathname);
-    return NextResponse.redirect(url);
+  } else {
+    // Autenticado pero sin permisos → toast + al catálogo. Nada de modal.
+    url.searchParams.set("error", "forbidden");
   }
+  return NextResponse.redirect(url);
 });
 
 export const config = {
