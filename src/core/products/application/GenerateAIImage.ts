@@ -5,6 +5,7 @@ import {
   NotFoundError,
   UnauthorizedError,
   type Session,
+  isAdmin,
 } from "@/core/shared";
 import type { SettingsRepository } from "@/core/settings/domain/repositories";
 import type { ProductRepository } from "../domain/repositories";
@@ -27,7 +28,7 @@ export class GenerateAIImageUseCase {
     productId: string,
   ): Promise<{ url: string; key: string; used: number; limit: number }> {
     if (!actor?.user) throw new UnauthorizedError();
-    if (actor.user.role !== "admin") throw new ForbiddenError();
+    if (!isAdmin(actor.user.role)) throw new ForbiddenError();
 
     const settings = await this.settingsRepo.get();
     if (!settings) throw new NotFoundError("settings");

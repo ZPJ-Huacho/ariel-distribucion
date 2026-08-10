@@ -1,6 +1,12 @@
 import type { Session } from "@/core/shared";
 import type { StorageRepository } from "@/core/storage";
-import { ConflictError, UnauthorizedError, ForbiddenError, ValidationError } from "@/core/shared";
+import {
+  ConflictError,
+  UnauthorizedError,
+  ForbiddenError,
+  ValidationError,
+  isAdmin,
+} from "@/core/shared";
 import type { Settings } from "../domain/models";
 import type { SettingsRepository } from "../domain/repositories";
 
@@ -12,7 +18,7 @@ export class UploadLogoUseCase {
 
   async execute(actor: Session, file: File): Promise<Settings> {
     if (!actor?.user) throw new UnauthorizedError();
-    if (actor.user.role !== "admin") throw new ForbiddenError();
+    if (!isAdmin(actor.user.role)) throw new ForbiddenError();
 
     const current = await this.repo.get();
     const uploaded = await this.storage.uploadImage(file, "logo");
@@ -43,7 +49,7 @@ export class RemoveLogoUseCase {
 
   async execute(actor: Session): Promise<Settings> {
     if (!actor?.user) throw new UnauthorizedError();
-    if (actor.user.role !== "admin") throw new ForbiddenError();
+    if (!isAdmin(actor.user.role)) throw new ForbiddenError();
 
     const current = await this.repo.get();
     const settings = await this.repo.update({ logoKey: "", logoUrl: "" });

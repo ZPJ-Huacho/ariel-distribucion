@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { getDb, users } from "@/shared/lib/db";
+import type { Role } from "@/core/shared";
 import type { UserRepository } from "../domain/repositories";
 import type { User, UserWithPassword } from "../domain/models";
 
@@ -21,7 +22,7 @@ type UserRow = {
   phone: string | null;
   address: string | null;
   preferredDeliveryTime: string | null;
-  role: "admin" | "customer";
+  role: Role;
   createdAt: Date;
 };
 

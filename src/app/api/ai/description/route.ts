@@ -7,6 +7,7 @@ import {
   ConflictError,
   ForbiddenError,
   UnauthorizedError,
+  isAdmin,
 } from "@/core/shared";
 import { jsonError, readJson } from "@/shared/lib/api-response";
 
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
   try {
     const session = await getSession();
     if (!session?.user) throw new UnauthorizedError();
-    if (session.user.role !== "admin") throw new ForbiddenError();
+    if (!isAdmin(session.user.role)) throw new ForbiddenError();
 
     const { productName } = await readJson(req, schema);
 

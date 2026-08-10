@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Role } from "@/core/shared";
 
 export type User = {
   id: string;
@@ -7,7 +8,7 @@ export type User = {
   phone: string | null;
   address: string | null;
   preferredDeliveryTime: string | null;
-  role: "admin" | "customer";
+  role: Role;
   createdAt: string;
 };
 

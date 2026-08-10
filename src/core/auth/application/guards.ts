@@ -1,6 +1,6 @@
 import { auth } from "../infrastructure/authjs";
 import type { Session } from "@/core/shared";
-import { ForbiddenError, UnauthorizedError } from "@/core/shared";
+import { ForbiddenError, UnauthorizedError, isAdmin } from "@/core/shared";
 
 export async function getSession(): Promise<Session> {
   const s = await auth();
@@ -25,6 +25,6 @@ export async function requireSession(): Promise<NonNullable<Session>> {
 
 export async function requireAdmin(): Promise<NonNullable<Session>> {
   const s = await requireSession();
-  if (s.user.role !== "admin") throw new ForbiddenError();
+  if (!isAdmin(s.user.role)) throw new ForbiddenError();
   return s;
 }

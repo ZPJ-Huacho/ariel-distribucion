@@ -4,8 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { authConfig } from "./authjs.config";
 import { getUserRepository, VerifyCredentialsUseCase, loginSchema } from "@/core/users";
-
-type Role = "admin" | "customer";
+import type { Role } from "@/core/shared";
 
 declare module "next-auth" {
   interface User {

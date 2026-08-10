@@ -1,12 +1,13 @@
 "use client";
 
 import { createContext, useContext } from "react";
+import type { Role } from "@/core/shared";
 
 export type ClientUser = {
   id: string;
   email: string;
   name: string;
-  role: "admin" | "customer";
+  role: Role;
   image: string | null;
   provider: "credentials" | "google";
 } | null;

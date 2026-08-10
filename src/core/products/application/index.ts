@@ -11,11 +11,12 @@ import {
   NotFoundError,
   UnauthorizedError,
   ValidationError,
+  isAdmin,
 } from "@/core/shared";
 
 function requireAdmin(actor: Session): void {
   if (!actor?.user) throw new UnauthorizedError();
-  if (actor.user.role !== "admin") throw new ForbiddenError();
+  if (!isAdmin(actor.user.role)) throw new ForbiddenError();
 }
 
 async function resolveCategoryId(categorySlug: string): Promise<string> {

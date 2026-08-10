@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import type { Role } from "@/core/shared";
 
 // Config EDGE-SAFE: sin providers ni adapter con dependencias de Node.
 // Se usa desde middleware.ts. La config completa (con Credentials +
@@ -12,7 +13,7 @@ export const authConfig = {
       if (user) {
         const u = user as {
           id?: string;
-          role?: "admin" | "customer";
+          role?: Role;
           image?: string | null;
           name?: string | null;
         };
@@ -29,7 +30,7 @@ export const authConfig = {
     session: ({ session, token }) => {
       const t = token as {
         id?: string;
-        role?: "admin" | "customer";
+        role?: Role;
         picture?: string | null;
         provider?: "credentials" | "google";
       };

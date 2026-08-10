@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useCurrentUser } from "@/shared/providers/UserProvider";
 import { useAuthDialog } from "@/shared/providers/AuthDialogProvider";
+import { isAdmin } from "@/core/shared";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -132,7 +133,7 @@ export function UserMenu({ glass = false }: { glass?: boolean }) {
             hint="Historial y estado"
             onClick={() => router.push("/perfil?tab=orders")}
           />
-          {user.role === "admin" && (
+          {isAdmin(user.role) && (
             <MenuItem
               icon={LayoutDashboard}
               label="Panel admin"

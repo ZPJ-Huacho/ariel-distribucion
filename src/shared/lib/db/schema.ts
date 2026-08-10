@@ -82,7 +82,9 @@ export const users = pgTable(
     phone: text("phone"),
     address: text("address"),
     preferredDeliveryTime: text("preferred_delivery_time"),
-    role: text("role", { enum: ["admin", "customer"] }).notNull().default("customer"),
+    role: text("role", { enum: ["super_admin", "admin", "customer"] })
+      .notNull()
+      .default("customer"),
     ...timestamps,
   },
   (t) => [uniqueIndex("users_email_unique").on(t.email)],

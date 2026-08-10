@@ -1,5 +1,6 @@
 import { Shield } from "lucide-react";
 import type { User } from "@/core/users";
+import { isAdmin } from "@/core/shared";
 
 function initialsOf(name: string): string {
   return (
@@ -41,10 +42,10 @@ export function ProfileHero({ user }: { user: User }) {
             <h2 className="break-words text-xl font-semibold tracking-tight sm:text-2xl md:text-3xl">
               {user.name}
             </h2>
-            {user.role === "admin" && (
+            {isAdmin(user.role) && (
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary sm:text-xs">
                 <Shield className="h-3 w-3" aria-hidden />
-                Admin
+                {user.role === "super_admin" ? "Super admin" : "Admin"}
               </span>
             )}
           </div>
