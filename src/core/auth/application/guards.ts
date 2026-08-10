@@ -11,6 +11,8 @@ export async function getSession(): Promise<Session> {
       email: s.user.email,
       name: s.user.name,
       role: s.user.role,
+      image: s.user.image ?? null,
+      provider: s.user.provider ?? "credentials",
     },
   };
 }

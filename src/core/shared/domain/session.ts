@@ -5,6 +5,8 @@ export type SessionUser = {
   email: string;
   name: string;
   role: Role;
+  image: string | null;
+  provider: "credentials" | "google";
 };
 
 export type Session = { user: SessionUser } | null;

@@ -12,10 +12,7 @@ import {
 } from "@/core/products";
 import { Header } from "@/shared/components/organisms/Header";
 import { SiteFooter } from "@/shared/components/organisms/SiteFooter";
-import {
-  FloatingNav,
-  SkipToContent,
-} from "@/shared/components/organisms/FloatingNav";
+import { FloatingNav } from "@/shared/components/organisms/FloatingNav";
 import { CategoryPills } from "../components/CategoryPills";
 import { CartBar } from "../components/CartBar";
 import { CatalogFilters } from "../components/CatalogFilters";
@@ -59,7 +56,6 @@ export async function CatalogView({ params }: { params: CatalogViewParams }) {
 
   return (
     <>
-      <SkipToContent />
       <Header overHero />
       <div aria-hidden data-nav-sentinel className="h-px w-full" />
       <Hero />

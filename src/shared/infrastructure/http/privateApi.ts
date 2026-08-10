@@ -14,9 +14,10 @@ privateApi.interceptors.response.use(
   (error) => {
     const appErr = toAppError(error);
     if (appErr.kind === "auth" && typeof window !== "undefined") {
-      // Redirección centralizada al login si la sesión expiró.
+      // Sesión expirada: llevamos al home con ?auth=login para que el modal
+      // se auto-abra (ya no hay ruta /login).
       const next = window.location.pathname + window.location.search;
-      window.location.assign(`/login?next=${encodeURIComponent(next)}`);
+      window.location.assign(`/?auth=login&next=${encodeURIComponent(next)}`);
     }
     return Promise.reject(appErr);
   },

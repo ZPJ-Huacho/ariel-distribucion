@@ -1,1 +1,1 @@
-export { FloatingNav, SkipToContent } from "./FloatingNav";
+export { FloatingNav } from "./FloatingNav";

@@ -7,6 +7,8 @@ export type ClientUser = {
   email: string;
   name: string;
   role: "admin" | "customer";
+  image: string | null;
+  provider: "credentials" | "google";
 } | null;
 
 const UserCtx = createContext<ClientUser>(null);

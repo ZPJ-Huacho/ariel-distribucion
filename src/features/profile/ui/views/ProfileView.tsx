@@ -8,10 +8,10 @@ import { ProfileClient } from "../components/ProfileClient";
 
 export async function ProfileView() {
   const session = await getSession();
-  if (!session) redirect("/login?next=/perfil");
+  if (!session) redirect("/?auth=login&next=/perfil");
 
   const user = await new GetProfileUseCase(getUserRepository()).execute(session);
-  if (!user) redirect("/login?next=/perfil");
+  if (!user) redirect("/?auth=login&next=/perfil");
 
   return (
     <>

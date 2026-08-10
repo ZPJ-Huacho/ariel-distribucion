@@ -10,6 +10,8 @@ import { Button } from "@/shared/components/atoms/button";
 import { Input } from "@/shared/components/atoms/input";
 import { Label } from "@/shared/components/atoms/label";
 import { PasswordInput } from "@/shared/components/atoms/password-input";
+import { GoogleButton } from "../GoogleButton";
+import { Turnstile, turnstileClientEnabled } from "@/shared/components/atoms/turnstile";
 
 function strengthOf(pw: string): { score: 0 | 1 | 2 | 3; label: string } {
   if (pw.length < 4) return { score: 0, label: "Muy corta" };
@@ -21,7 +23,15 @@ function strengthOf(pw: string): { score: 0 | 1 | 2 | 3; label: string } {
   return { score: Math.min(score, 3) as 0 | 1 | 2 | 3, label };
 }
 
-export function RegisterForm() {
+export function RegisterForm({
+  googleEnabled = false,
+  onSuccess,
+  redirectOnSuccess = true,
+}: {
+  googleEnabled?: boolean;
+  onSuccess?: () => void;
+  redirectOnSuccess?: boolean;
+} = {}) {
   const router = useRouter();
   const register = useRegister();
   const [name, setName] = useState("");
@@ -29,13 +39,25 @@ export function RegisterForm() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [website, setWebsite] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const strength = useMemo(() => strengthOf(password), [password]);
+  const captchaRequired = turnstileClientEnabled;
+  const captchaOk = !captchaRequired || !!turnstileToken;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (website) return;
     setError(null);
     try {
-      await register.mutateAsync({ name, email, phone, password });
+      await register.mutateAsync({
+        name,
+        email,
+        phone,
+        password,
+        _ts: turnstileToken,
+        _hp: website,
+      });
       const res = await signIn("credentials", {
         email,
         password,
@@ -46,7 +68,8 @@ export function RegisterForm() {
         return;
       }
       toast.success("Cuenta creada. ¡Bienvenido!");
-      router.push("/");
+      onSuccess?.();
+      if (redirectOnSuccess) router.push("/");
       router.refresh();
     } catch (err) {
       const kind = (err as { kind?: string } | undefined)?.kind;
@@ -67,7 +90,31 @@ export function RegisterForm() {
   ];
 
   return (
+    <div className="flex flex-col gap-5">
+      {googleEnabled && (
+        <>
+          <GoogleButton label="Regístrate con Google" />
+          <div className="relative flex items-center gap-3">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+              o con tu email
+            </span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+        </>
+      )}
     <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
+      <div className="sr-only" aria-hidden="true">
+        <label htmlFor="r-website">No rellenes este campo</label>
+        <input
+          id="r-website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
+      </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="name">Nombre</Label>
         <div className="relative">
@@ -166,10 +213,23 @@ export function RegisterForm() {
         </p>
       )}
 
-      <Button type="submit" className="w-full" disabled={register.isPending}>
+      {captchaRequired && (
+        <Turnstile
+          action="register"
+          onToken={setTurnstileToken}
+          className="flex justify-center"
+        />
+      )}
+
+      <Button
+        type="submit"
+        className="w-full h-11"
+        disabled={register.isPending || !captchaOk}
+      >
         <UserPlus className="mr-2 h-4 w-4" aria-hidden />
         {register.isPending ? "Creando..." : "Crear cuenta"}
       </Button>
     </form>
+    </div>
   );
 }

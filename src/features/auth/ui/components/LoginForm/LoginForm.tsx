@@ -2,7 +2,6 @@
 
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { LogIn, Mail } from "lucide-react";
@@ -10,22 +9,34 @@ import { Button } from "@/shared/components/atoms/button";
 import { Input } from "@/shared/components/atoms/input";
 import { Label } from "@/shared/components/atoms/label";
 import { PasswordInput } from "@/shared/components/atoms/password-input";
+import { GoogleButton } from "../GoogleButton";
 
 export function LoginForm({
   nextPromise,
+  next: nextProp,
+  googleEnabled = false,
+  onSuccess,
+  redirectOnSuccess = true,
 }: {
-  nextPromise: Promise<{ next?: string }>;
+  nextPromise?: Promise<{ next?: string }>;
+  next?: string;
+  googleEnabled?: boolean;
+  onSuccess?: () => void;
+  redirectOnSuccess?: boolean;
 }) {
   const router = useRouter();
-  const { next } = use(nextPromise);
+  const fromPromise = nextPromise ? use(nextPromise).next : undefined;
+  const next = nextProp ?? fromPromise;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [website, setWebsite] = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (website) return;
     setError(null);
     setBusy(true);
     const res = await signIn("credentials", {
@@ -40,12 +51,39 @@ export function LoginForm({
       toast.error(msg);
       return;
     }
-    router.push(next ?? "/");
+    onSuccess?.();
+    if (redirectOnSuccess) {
+      router.push(next ?? "/");
+    }
     router.refresh();
   }
 
   return (
+    <div className="flex flex-col gap-5">
+      {googleEnabled && (
+        <>
+          <GoogleButton next={next} />
+          <div className="relative flex items-center gap-3">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+              o con tu email
+            </span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+        </>
+      )}
     <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
+      <div className="sr-only" aria-hidden="true">
+        <label htmlFor="website">No rellenes este campo</label>
+        <input
+          id="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
+      </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">Email</Label>
         <div className="relative">
@@ -69,15 +107,7 @@ export function LoginForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="password">Contraseña</Label>
-          <Link
-            href="/registro"
-            className="text-xs text-muted-foreground hover:text-primary hover:underline"
-          >
-            ¿Olvidada?
-          </Link>
-        </div>
+        <Label htmlFor="password">Contraseña</Label>
         <PasswordInput
           id="password"
           autoComplete="current-password"
@@ -107,10 +137,11 @@ export function LoginForm({
         </p>
       )}
 
-      <Button type="submit" className="w-full" disabled={busy}>
+      <Button type="submit" className="w-full h-11" disabled={busy}>
         <LogIn className="mr-2 h-4 w-4" aria-hidden />
         {busy ? "Entrando..." : "Entrar"}
       </Button>
     </form>
+    </div>
   );
 }

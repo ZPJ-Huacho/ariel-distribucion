@@ -5,6 +5,7 @@ import { getSession } from "@/core/auth";
 import { Toaster } from "@/shared/components/atoms/sonner";
 import { SettingsProvider } from "@/shared/providers/SettingsProvider";
 import { UserProvider, type ClientUser } from "@/shared/providers/UserProvider";
+import { AuthDialogProvider } from "@/shared/providers/AuthDialogProvider";
 import { headers } from "next/headers";
 import { QueryProvider } from "@/shared/providers/QueryProvider";
 import { StructuredData } from "@/shared/components/organisms/StructuredData";
@@ -86,6 +87,8 @@ export default async function RootLayout({
         email: session.user.email,
         name: session.user.name,
         role: session.user.role,
+        image: session.user.image,
+        provider: session.user.provider,
       }
     : null;
   const theme = getActiveTheme(settings.theme);
@@ -113,8 +116,10 @@ export default async function RootLayout({
         <QueryProvider>
           <SettingsProvider settings={settings}>
             <UserProvider user={clientUser}>
-              {children}
-              <Toaster richColors closeButton />
+              <AuthDialogProvider>
+                {children}
+                <Toaster richColors closeButton />
+              </AuthDialogProvider>
             </UserProvider>
           </SettingsProvider>
         </QueryProvider>

@@ -25,6 +25,7 @@ import { createOrderSchema } from "@/core/orders";
 import { useCart } from "@/shared/lib/cart-store";
 import { useSettings } from "@/shared/providers/SettingsProvider";
 import { useCurrentUser } from "@/shared/providers/UserProvider";
+import { useAuthDialog } from "@/shared/providers/AuthDialogProvider";
 import { useProfile } from "@/features/profile/api/useProfile";
 import { buildOrderMessage, buildWhatsAppLink } from "../../lib/whatsapp";
 import { useCreateOrder } from "../../../api/useCreateOrder";
@@ -34,6 +35,7 @@ import { Button, buttonVariants } from "@/shared/components/atoms/button";
 import { Input } from "@/shared/components/atoms/input";
 import { Label } from "@/shared/components/atoms/label";
 import { Textarea } from "@/shared/components/atoms/textarea";
+import { Turnstile, turnstileClientEnabled } from "@/shared/components/atoms/turnstile";
 import { cn } from "@/shared/lib/utils";
 
 export function OrderForm() {
@@ -56,6 +58,10 @@ export function OrderForm() {
   const [preferredTime, setPreferredTime] = useState("");
   const [notes, setNotes] = useState("");
   const [override, setOverride] = useState(false);
+  const [website, setWebsite] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const captchaRequired = turnstileClientEnabled;
+  const captchaOk = !captchaRequired || !!turnstileToken;
   const hydratedRef = useRef(false);
 
   useEffect(() => {
@@ -71,6 +77,7 @@ export function OrderForm() {
   if (!items.length) return <EmptyCart />;
 
   async function submit() {
+    if (website) return;
     const draft = {
       customerName,
       customerPhone,
@@ -91,7 +98,11 @@ export function OrderForm() {
       return;
     }
     try {
-      await createOrder.mutateAsync(parsed.data);
+      await createOrder.mutateAsync({
+        ...parsed.data,
+        _ts: turnstileToken,
+        _hp: website,
+      });
       const message = buildOrderMessage(
         items,
         { ...parsed.data, source: "web" },
@@ -160,12 +171,34 @@ export function OrderForm() {
         <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
           <SummaryCard total={total} count={totalItems} />
 
+          <div className="sr-only" aria-hidden="true">
+            <label htmlFor="o-website">No rellenes este campo</label>
+            <input
+              id="o-website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+            />
+          </div>
+
+          {captchaRequired && (
+            <Turnstile
+              action="order"
+              onToken={setTurnstileToken}
+              className="flex justify-center"
+            />
+          )}
+
           <div className="hidden flex flex-col gap-2 lg:block">
             <Button
               className="h-12 w-full text-base"
               size="lg"
               onClick={submit}
-              disabled={createOrder.isPending || !settings.whatsappNumber}
+              disabled={
+                createOrder.isPending || !settings.whatsappNumber || !captchaOk
+              }
             >
               <MessageCircle className="mr-2 h-5 w-5" aria-hidden />
               {createOrder.isPending
@@ -190,7 +223,7 @@ export function OrderForm() {
         total={total}
         count={totalItems}
         pending={createOrder.isPending}
-        disabled={!settings.whatsappNumber}
+        disabled={!settings.whatsappNumber || !captchaOk}
         onSubmit={submit}
       />
     </>
@@ -516,24 +549,7 @@ function ContactFormCard(props: {
           )}
         </div>
 
-        {!props.isLoggedIn && (
-          <div className="mt-3 rounded-md bg-muted/60 px-2.5 py-2 text-xs text-muted-foreground">
-            <Link
-              href="/login?next=/pedido"
-              className="font-medium text-primary hover:underline"
-            >
-              Entra
-            </Link>{" "}
-            o{" "}
-            <Link
-              href="/registro"
-              className="font-medium text-primary hover:underline"
-            >
-              regístrate
-            </Link>{" "}
-            para autocompletar tus datos la próxima vez.
-          </div>
-        )}
+        {!props.isLoggedIn && <ContactFormAuthPrompt />}
       </header>
 
       <div className="flex flex-col gap-5 px-4 py-5 sm:gap-6 sm:px-6 sm:py-6 md:px-8 md:py-7">
@@ -688,6 +704,30 @@ function SummaryCard({ total, count }: { total: number; count: number }) {
           {formatPrice(total)}
         </span>
       </div>
+    </div>
+  );
+}
+
+function ContactFormAuthPrompt() {
+  const { open } = useAuthDialog();
+  return (
+    <div className="mt-3 rounded-md bg-muted/60 px-2.5 py-2 text-xs text-muted-foreground">
+      <button
+        type="button"
+        onClick={() => open({ tab: "login", next: "/pedido" })}
+        className="font-medium text-primary hover:underline"
+      >
+        Entra
+      </button>{" "}
+      o{" "}
+      <button
+        type="button"
+        onClick={() => open({ tab: "register", next: "/pedido" })}
+        className="font-medium text-primary hover:underline"
+      >
+        regístrate
+      </button>{" "}
+      para autocompletar tus datos la próxima vez.
     </div>
   );
 }

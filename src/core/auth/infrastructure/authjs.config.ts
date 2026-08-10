@@ -5,20 +5,38 @@ import type { NextAuthConfig } from "next-auth";
 // verificación de password) vive en authjs.ts y es server-only.
 export const authConfig = {
   session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
+  pages: { signIn: "/?auth=login" },
   providers: [],
   callbacks: {
-    jwt: async ({ token, user }) => {
+    jwt: async ({ token, user, account }) => {
       if (user) {
-        token.id = (user as { id?: string }).id;
-        token.role = (user as { role?: "admin" | "customer" }).role;
+        const u = user as {
+          id?: string;
+          role?: "admin" | "customer";
+          image?: string | null;
+          name?: string | null;
+        };
+        token.id = u.id;
+        token.role = u.role;
+        token.picture = u.image ?? token.picture ?? null;
+        if (u.name) token.name = u.name;
+      }
+      if (account?.provider) {
+        token.provider = account.provider === "google" ? "google" : "credentials";
       }
       return token;
     },
     session: ({ session, token }) => {
-      const t = token as { id?: string; role?: "admin" | "customer" };
+      const t = token as {
+        id?: string;
+        role?: "admin" | "customer";
+        picture?: string | null;
+        provider?: "credentials" | "google";
+      };
       if (t.id) session.user.id = t.id;
       if (t.role) session.user.role = t.role;
+      session.user.image = t.picture ?? null;
+      session.user.provider = t.provider ?? "credentials";
       return session;
     },
   },
