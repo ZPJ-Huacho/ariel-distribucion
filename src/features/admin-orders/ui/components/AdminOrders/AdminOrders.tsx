@@ -31,6 +31,7 @@ import { Input } from "@/shared/components/atoms/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -628,32 +629,36 @@ function MoreMenu({
         <MoreHorizontal className="h-4 w-4" aria-hidden />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">
-          {reopening ? "Reabrir como" : "Cambiar estado a"}
-        </DropdownMenuLabel>
-        {flowOptions.map((s) => {
-          const Icon = reopening ? RotateCcw : s.icon;
-          return (
-            <DropdownMenuItem
-              key={s.id}
-              onSelect={() => onStatus(s.id)}
-              className="gap-2"
-            >
-              <Icon className="h-3.5 w-3.5" aria-hidden />
-              {s.label}
-            </DropdownMenuItem>
-          );
-        })}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            {reopening ? "Reabrir como" : "Cambiar estado a"}
+          </DropdownMenuLabel>
+          {flowOptions.map((s) => {
+            const Icon = reopening ? RotateCcw : s.icon;
+            return (
+              <DropdownMenuItem
+                key={s.id}
+                onSelect={() => onStatus(s.id)}
+                className="gap-2"
+              >
+                <Icon className="h-3.5 w-3.5" aria-hidden />
+                {s.label}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuGroup>
         {!reopening && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => onStatus("cancelled")}
-              className="gap-2 text-rose-600 focus:bg-rose-50 focus:text-rose-700 dark:focus:bg-rose-500/10"
-            >
-              <Ban className="h-3.5 w-3.5" aria-hidden />
-              Cancelar pedido
-            </DropdownMenuItem>
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onSelect={() => onStatus("cancelled")}
+                className="gap-2 text-rose-600 focus:bg-rose-50 focus:text-rose-700 dark:focus:bg-rose-500/10"
+              >
+                <Ban className="h-3.5 w-3.5" aria-hidden />
+                Cancelar pedido
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
           </>
         )}
       </DropdownMenuContent>
