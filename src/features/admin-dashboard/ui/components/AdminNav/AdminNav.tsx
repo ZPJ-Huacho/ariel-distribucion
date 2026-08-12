@@ -8,7 +8,6 @@ import {
   ShoppingBag,
   SlidersHorizontal,
   Tag,
-  Users,
 } from "lucide-react";
 import { isAdmin } from "@/core/shared";
 import { useCurrentUser } from "@/shared/providers/UserProvider";
@@ -26,7 +25,6 @@ const ITEMS: AdminNavItem[] = [
   { href: "/admin/pedidos", label: "Pedidos", icon: ShoppingBag },
   { href: "/admin/productos", label: "Productos", icon: Package },
   { href: "/admin/categorias", label: "Categorías", icon: Tag },
-  { href: "/admin/usuarios", label: "Usuarios", icon: Users },
   { href: "/admin/ajustes", label: "Ajustes", icon: SlidersHorizontal },
 ];
 
@@ -105,14 +103,14 @@ export function AdminNav({
             aria-label={label}
             title={label}
             className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors xl:px-3",
+              "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors lg:px-3",
               active
                 ? "bg-white text-primary shadow-sm"
                 : "text-white/85 hover:bg-white/10 hover:text-white",
             )}
           >
-            <Icon className="h-4 w-4 shrink-0 xl:h-3.5 xl:w-3.5" aria-hidden />
-            <span className="hidden xl:inline">{label}</span>
+            <Icon className="h-4 w-4 shrink-0 lg:h-3.5 lg:w-3.5" aria-hidden />
+            <span className="hidden lg:inline">{label}</span>
           </Link>
         );
       })}

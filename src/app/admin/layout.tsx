@@ -31,10 +31,10 @@ export default function AdminLayout({
               href="/"
               aria-label="Ver catálogo"
               title="Ver catálogo"
-              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 text-xs font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white sm:text-sm xl:px-3"
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 text-xs font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white sm:text-sm lg:px-3"
             >
               <ArrowUpRight className="h-4 w-4" aria-hidden />
-              <span className="hidden xl:inline">Ver catálogo</span>
+              <span className="hidden lg:inline">Ver catálogo</span>
             </Link>
             <LogoutButton />
           </div>

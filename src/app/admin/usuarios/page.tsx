@@ -1,7 +1,8 @@
-import { AdminUsersView } from "@/features/admin-users";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
+// La gestión de usuarios ahora vive como pestaña dentro de /admin/ajustes.
+// Este redirect mantiene vivos bookmarks, links viejos y cualquier JS
+// cacheado que aún apunte a /admin/usuarios.
 export default function AdminUsuariosPage() {
-  return <AdminUsersView />;
+  redirect("/admin/ajustes?tab=users");
 }
