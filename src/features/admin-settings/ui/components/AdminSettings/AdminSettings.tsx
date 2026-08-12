@@ -49,6 +49,11 @@ export function AdminSettings() {
     if (data) setS(data);
   }, [data]);
 
+  // Solo hay algo que guardar si el estado en pantalla difiere del último
+  // fetched. Sin esto, la barra de "Guardar" quedaba flotando eternamente
+  // encima de la sección "Equipo" aunque no hubiera cambios pendientes.
+  const dirty = data ? JSON.stringify(s) !== JSON.stringify(data) : false;
+
   const bindText = (k: "businessName" | "tagline" | "heroPhrase" | "whatsappNumber" | "address") => ({
     value: s[k] ?? "",
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -201,15 +206,31 @@ export function AdminSettings() {
 
       </div>
 
-      <div className="sticky bottom-20 z-10 mt-2 flex items-center justify-end gap-2 rounded-full border bg-card p-2 shadow-lg md:bottom-4">
-        <Button
-          type="submit"
-          disabled={update.isPending}
-          className="rounded-full px-6"
-        >
-          {update.isPending ? "Guardando..." : "Guardar cambios"}
-        </Button>
-      </div>
+      {(dirty || update.isPending) && (
+        <div className="sticky bottom-20 z-10 mt-2 flex items-center justify-between gap-3 rounded-full border bg-card p-2 pl-4 shadow-lg md:bottom-4">
+          <span className="hidden text-xs text-muted-foreground sm:inline">
+            Tienes cambios sin guardar
+          </span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={update.isPending}
+              onClick={() => data && setS(data)}
+              className="rounded-full"
+            >
+              Descartar
+            </Button>
+            <Button
+              type="submit"
+              disabled={update.isPending}
+              className="rounded-full px-6"
+            >
+              {update.isPending ? "Guardando..." : "Guardar cambios"}
+            </Button>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
