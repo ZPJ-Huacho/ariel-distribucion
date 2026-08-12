@@ -8,7 +8,10 @@ import {
   ShoppingBag,
   SlidersHorizontal,
   Tag,
+  Users,
 } from "lucide-react";
+import { isAdmin } from "@/core/shared";
+import { useCurrentUser } from "@/shared/providers/UserProvider";
 import { cn } from "@/shared/lib/utils";
 
 type AdminNavItem = {
@@ -23,6 +26,7 @@ const ITEMS: AdminNavItem[] = [
   { href: "/admin/pedidos", label: "Pedidos", icon: ShoppingBag },
   { href: "/admin/productos", label: "Productos", icon: Package },
   { href: "/admin/categorias", label: "Categorías", icon: Tag },
+  { href: "/admin/usuarios", label: "Usuarios", icon: Users },
   { href: "/admin/ajustes", label: "Ajustes", icon: SlidersHorizontal },
 ];
 
@@ -37,6 +41,11 @@ export function AdminNav({
   variant?: "desktop" | "mobile";
 }) {
   const pathname = usePathname();
+  const user = useCurrentUser();
+  // Doble seguro visual: si el usuario del cliente aún no ha cargado o no es
+  // admin, mostramos todo (el proxy y los use cases igualmente cortan por
+  // detrás). Si sí ha cargado, no ensuciamos el menú con entradas prohibidas.
+  const items = user && !isAdmin(user.role) ? [] : ITEMS;
 
   if (variant === "mobile") {
     return (
@@ -54,7 +63,7 @@ export function AdminNav({
               rgba(9, 12, 18, 0.9)`,
           }}
         >
-          {ITEMS.map((item) => {
+          {items.map((item) => {
             const { href, label, icon: Icon } = item;
             const active = isActiveItem(pathname, item);
             return (
@@ -85,7 +94,7 @@ export function AdminNav({
       aria-label="Panel de administración"
       className="hidden min-w-0 flex-1 items-center justify-center gap-1 text-sm md:flex"
     >
-      {ITEMS.map((item) => {
+      {items.map((item) => {
         const { href, label, icon: Icon } = item;
         const active = isActiveItem(pathname, item);
         return (

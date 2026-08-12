@@ -1,10 +1,13 @@
 import bcrypt from "bcryptjs";
 import type { UserRepository } from "../domain/repositories";
 import type { User, RegisterInput, UpdateProfileInput } from "../domain/models";
-import type { Session } from "@/core/shared";
+import type { Role, Session } from "@/core/shared";
 import {
   ConflictError,
+  ForbiddenError,
+  NotFoundError,
   UnauthorizedError,
+  isAdmin,
 } from "@/core/shared";
 
 export class RegisterUserUseCase {
@@ -84,6 +87,69 @@ export class UpdateProfileUseCase {
 
     const updated = await this.repo.updateProfile(actor.user.id, patch);
     if (!updated) throw new UnauthorizedError();
+    return updated;
+  }
+}
+
+// Reglas de gestión de usuarios:
+// - super_admin ve y edita cualquier rol (excepto el suyo).
+// - admin ve customer y admin; puede promover customer→admin y degradar
+//   admin→customer, pero no puede tocar cuentas super_admin ni crear una.
+// - Nadie cambia su propio rol (evita auto-lockout).
+function assertCanManageUsers(actor: Session): NonNullable<Session> {
+  if (!actor?.user) throw new UnauthorizedError();
+  if (!isAdmin(actor.user.role)) throw new ForbiddenError();
+  return actor;
+}
+
+function canSeeUser(viewerRole: Role, targetRole: Role): boolean {
+  if (viewerRole === "super_admin") return true;
+  return targetRole !== "super_admin";
+}
+
+function canChangeRole(
+  viewer: { id: string; role: Role },
+  target: { id: string; role: Role },
+  newRole: Role,
+): { ok: true } | { ok: false; reason: string } {
+  if (viewer.id === target.id)
+    return { ok: false, reason: "No puedes cambiar tu propio rol." };
+  if (viewer.role === "super_admin") return { ok: true };
+  // A partir de aquí, viewer es "admin".
+  if (target.role === "super_admin")
+    return { ok: false, reason: "No puedes modificar a un super_admin." };
+  if (newRole === "super_admin")
+    return { ok: false, reason: "Solo un super_admin puede asignar ese rol." };
+  return { ok: true };
+}
+
+export class ListUsersUseCase {
+  constructor(private readonly repo: UserRepository) {}
+  async execute(actor: Session): Promise<User[]> {
+    const s = assertCanManageUsers(actor);
+    const all = await this.repo.listAll();
+    return all.filter((u) => canSeeUser(s.user.role, u.role));
+  }
+}
+
+export class UpdateUserRoleUseCase {
+  constructor(private readonly repo: UserRepository) {}
+  async execute(actor: Session, targetId: string, newRole: Role): Promise<User> {
+    const s = assertCanManageUsers(actor);
+    const target = await this.repo.findById(targetId);
+    if (!target) throw new NotFoundError("usuario");
+    if (!canSeeUser(s.user.role, target.role)) throw new NotFoundError("usuario");
+
+    const check = canChangeRole(
+      { id: s.user.id, role: s.user.role },
+      { id: target.id, role: target.role },
+      newRole,
+    );
+    if (!check.ok) throw new ForbiddenError();
+
+    if (target.role === newRole) return target;
+    const updated = await this.repo.updateRole(targetId, newRole);
+    if (!updated) throw new NotFoundError("usuario");
     return updated;
   }
 }

@@ -49,3 +49,8 @@ export const updateProfileSchema = z
     path: ["currentPassword"],
   });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+export const updateUserRoleSchema = z.object({
+  role: z.enum(["super_admin", "admin", "customer"]),
+});
+export type UpdateUserRoleInput = z.infer<typeof updateUserRoleSchema>;

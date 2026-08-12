@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { getDb, users } from "@/shared/lib/db";
 import type { Role } from "@/core/shared";
 import type { UserRepository } from "../domain/repositories";
@@ -94,6 +94,25 @@ export class UserRepositoryDrizzle implements UserRepository {
     const rows = await db
       .update(users)
       .set(patch)
+      .where(eq(users.id, id))
+      .returning(userColumns);
+    return rows[0] ? toDomain(rows[0]) : null;
+  }
+
+  async listAll(): Promise<User[]> {
+    const db = getDb();
+    const rows = await db
+      .select(userColumns)
+      .from(users)
+      .orderBy(desc(users.createdAt));
+    return rows.map(toDomain);
+  }
+
+  async updateRole(id: string, role: Role): Promise<User | null> {
+    const db = getDb();
+    const rows = await db
+      .update(users)
+      .set({ role })
       .where(eq(users.id, id))
       .returning(userColumns);
     return rows[0] ? toDomain(rows[0]) : null;
